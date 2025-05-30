@@ -19,12 +19,12 @@
       font-family: 'Inter', sans-serif;
       background-color: white;
     }
-.main-container {
-  padding: 1rem;
-  max-width: 100rem; /* Example: even narrower width */
-  margin-left: auto;
-  margin-right: auto;
-}
+    .main-container {
+      padding: 1rem;
+      max-width: 100rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
     .header-container {
       display: flex;
       align-items: center;
@@ -324,6 +324,17 @@
         <p><i class="fas fa-money-bill-wave text-[--accent-green]"></i> Valor Total: R$ <span id="totalPrice" class="font-semibold">0.00</span></p>
         <p><i class="fas fa-percentage text-[--accent-green]"></i> Desconto: R$ <span id="discountValue" class="font-semibold">0.00</span> (<span id="discountPercent" class="font-semibold">0</span>%)</p>
         <p class="final-price"><i class="fas fa-wallet text-[--primary-blue]"></i> Valor Final: R$ <span id="finalPrice" class="font-semibold">0.00</span></p>
+      </div>
+      <!-- Campo Responsável -->
+      <div class="search-container mt-4 mx-auto max-w-md">
+        <h2 class="mb-6 text-center text-xl">Responsável</h2>
+        <input
+          type="text"
+          id="responsibleInput"
+          class="custom-input"
+          placeholder="Digite o nome do responsável"
+          aria-label="Digite o nome do responsável"
+        >
       </div>
       <button
         id="printButton"
@@ -972,6 +983,7 @@ const exams = [
       const discountPercent = parseFloat(document.getElementById("discountPercent").textContent);
       const discountValue = parseFloat(document.getElementById("discountValue").textContent);
       const finalPrice = parseFloat(document.getElementById("finalPrice").textContent);
+      const responsible = document.getElementById("responsibleInput").value || "Não informado";
 
       let printContent = `
         <html>
@@ -1104,23 +1116,23 @@ const exams = [
               border-top: 1px solid #e5e7eb;
               padding-top: 1rem;
             }
-.btn-primary {
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.375rem;
-  background-color: #1e40af !important; /* Light blue */
-  color: white !important; /* Black text */
-  font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  text-align: center;
-  border: none;
-}
-.btn-primary:hover {
-  background-color: #1e40af !important; /* Same light blue on hover */
-  color: white !important; /* Same black text on hover */
-  transform: none; /* No movement on hover */
-}
+            .btn-primary {
+              padding: 0.75rem 1.5rem;
+              border-radius: 0.375rem;
+              background-color: #1e40af !important;
+              color: white !important;
+              font-weight: 500;
+              cursor: pointer;
+              display: inline-flex;
+              align-items: center;
+              text-align: center;
+              border: none;
+            }
+            .btn-primary:hover {
+              background-color: #1e40af !important;
+              color: white !important;
+              transform: none;
+            }
             .black-text {
               color: black !important;
             }
@@ -1147,6 +1159,7 @@ const exams = [
                 </div>
               </div>
               <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+              <p>Responsável: ${responsible}</p>
             </div>
             <h2 style="color: #000000; font-size: 1.25rem; margin-bottom: 1rem;">Exames Selecionados</h2>
             <table class="print-table">
@@ -1202,7 +1215,6 @@ const exams = [
       if (printWindow && printWindow.document) {
         printWindow.document.write(printContent);
         printWindow.document.close();
-        // Adicionar evento de clique ao botão de impressão na janela de impressão
         printWindow.document.getElementById('printButtonWindow').addEventListener('click', () => {
           printWindow.print();
         });
