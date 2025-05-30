@@ -1,0 +1,11 @@
+{
+  "name": "lab-exams",
+  "version": "1.0.0",
+  "description": "Consulta de preços de exames laboratoriais",
+  "scripts": {
+    "build": "npx tailwindcss -i ./src/input.css -o ./dist/styles.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.3"
+  }
+}

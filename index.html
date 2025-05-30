@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consulta de Preços de Exames Laboratoriais</title>
+  <link href="dist/styles.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-blue: #1e40af;
+      --text-light: #6b7280;
+      --text-dark: #1f2937;
+      --accent-green: #10b981;
+      --background-light: #f9fafb;
+      --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: white;
+    }
+.main-container {
+  padding: 1rem;
+  max-width: 100rem; /* Example: even narrower width */
+  margin-left: auto;
+  margin-right: auto;
+}
+    .header-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+    }
+    .logo-container {
+      flex-shrink: 0;
+    }
+    .logo-container img {
+      max-width: 120px;
+      height: auto;
+      display: block;
+    }
+    .logo-container.right {
+      order: 2;
+    }
+    .title-container {
+      text-align: center;
+      flex: 1;
+      margin: 0 1rem;
+    }
+    h1, h2 {
+      color: var(--primary-blue);
+      font-weight: 600;
+    }
+    h1 {
+      font-size: 2rem;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: var(--card-shadow);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .custom-input {
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      padding: 0.75rem 2.5rem;
+      width: 100%;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .custom-input:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    }
+    .search-container {
+      position: relative;
+      margin-bottom: 2rem;
+      max-width: 14rem;
+    }
+    .search-container i {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 1.25rem;
+    }
+    #examListContainer {
+      max-height: 250px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-blue) #e5e7eb;
+      display: none;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.375rem;
+      padding: 0.5rem;
+    }
+    #examListContainer::-webkit-scrollbar {
+      width: 8px;
+    }
+    #examListContainer::-webkit-scrollbar-track {
+      background: #e5e7eb;
+    }
+    #examListContainer::-webkit-scrollbar-thumb {
+      background-color: var(--primary-blue);
+      border-radius: 4px;
+    }
+    .exam-checkbox {
+      padding: 0.75rem;
+      display: flex;
+      align-items: center;
+      border-radius: 0.25rem;
+      transition: background-color 0.2s ease;
+    }
+    .exam-checkbox:nth-child(even) {
+      background-color: #f9fafb;
+    }
+    .exam-checkbox:hover {
+      background-color: #eff6ff;
+    }
+    .exam-checkbox input {
+      margin-right: 0.75rem;
+      accent-color: var(--primary-blue);
+    }
+    .exam-checkbox label {
+      color: var(--text-dark);
+    }
+    .exam-checkbox label span {
+      color: var(--accent-green);
+      font-weight: 500;
+    }
+    .no-results {
+      color: var(--text-light);
+      text-align: center;
+      padding: 1rem;
+    }
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .custom-table th {
+      background-color: var(--primary-blue);
+      color: white;
+      padding: 0.75rem;
+      text-align: center;
+    }
+    .custom-table td {
+      padding: 0.75rem;
+      text-align: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .custom-table tr:hover {
+      background-color: #f3f4f6;
+    }
+    .black-text {
+      color: #eff6ff !important;
+    }
+    .btn-primary, .btn-accent, .btn-danger {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.375rem;
+      color: white;
+      font-weight: 500;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background-color: var(--primary-blue);
+    }
+    .btn-primary:hover {
+      background-color: #1e3a8a;
+      transform: translateY(-1px);
+    }
+    .btn-accent {
+      background-color: var(--accent-green);
+    }
+    .btn-accent:hover {
+      background-color: #059669;
+      transform: translateY(-1px);
+    }
+    .btn-danger {
+      background-color: #dc2626;
+    }
+    .btn-danger:hover {
+      background-color: #b91c1c;
+      transform: translateY(-1px);
+    }
+    .summary-card {
+      background-color: #eff6ff;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .summary-card p {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .summary-card .final-price {
+      font-size: 1.25rem;
+      color: var(--primary-blue);
+    }
+    #discountSection {
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+    }
+    #discountSection.active {
+      max-height: 200px;
+      opacity: 1;
+    }
+    @media (max-width: 640px) {
+      .main-container {
+        padding: 1rem;
+      }
+      .header-container {
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      .logo-container img {
+        max-width: 80px;
+      }
+      .logo-container.right {
+        order: 0;
+      }
+      .title-container {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      h2 {
+        font-size: 1.25rem;
+      }
+      .custom-input {
+        padding: 0.5rem 2rem;
+      }
+      .btn-primary, .btn-accent, .btn-danger {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+      }
+    }
+    @media print {
+      .btn-primary {
+        background-color: var(--primary-blue) !important;
+        color: white !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container mx-auto max-w-3xl">
+    <!-- Header with Logos and Title -->
+    <div class="header-container">
+      <div class="logo-container">
+        <img src="img/sesi.jpg" alt="SESI Logo" aria-label="Logotipo do SESI">
+      </div>
+      <div class="title-container">
+        <h1>Consulta de Preços de Exames</h1>
+      </div>
+      <div class="logo-container right">
+        <img src="img/melhoria.jpg" alt="Melhoria Logo" aria-label="Logotipo da Melhoria">
+      </div>
+    </div>
+
+    <!-- Caixa de busca por texto -->
+    <div class="search-container mb-10 mx-auto">
+      <input
+        type="text"
+        id="examSearch"
+        class="custom-input"
+        placeholder="Digite o nome do exame"
+        aria-label="Digite o nome do exame para filtrar"
+      >
+      <i class="fas fa-search"></i>
+    </div>
+
+    <!-- Lista de checkboxes -->
+    <div class="mb-10 mx-auto max-w-md">
+      <h2 class="text-center mb-6 text-xl">Selecionar Exames</h2>
+      <div id="examListContainer" class="card">
+        <!-- Checkboxes serão inseridos via JavaScript -->
+      </div>
+    </div>
+
+    <!-- Tabela de exames selecionados -->
+    <div class="card">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-center text-xl">Exames Selecionados</h2>
+        <button
+          id="clearSelection"
+          class="btn-danger"
+          aria-label="Limpar todos os exames selecionados"
+        >
+          <i class="fas fa-trash mr-2"></i> Limpar Seleção
+        </button>
+      </div>
+      <div class="max-h-96 overflow-y-auto scrollbar-custom">
+        <table class="custom-table" aria-label="Lista de exames selecionados" role="grid">
+          <thead>
+            <tr>
+              <th class="rounded-tl-xl black-text">Exame</th>
+              <th class="rounded-tr-xl black-text">Preço (R$)</th>
+            </tr>
+          </thead>
+          <tbody id="selectedExamTable">
+            <!-- Exames selecionados serão inseridos via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Resumo -->
+    <div class="summary-card">
+      <h2 class="mb-6 text-center text-xl">Resumo</h2>
+      <div class="space-y-4 text-lg text-center">
+        <p><i class="fas fa-money-bill-wave text-[--accent-green]"></i> Valor Total: R$ <span id="totalPrice" class="font-semibold">0.00</span></p>
+        <p><i class="fas fa-percentage text-[--accent-green]"></i> Desconto: R$ <span id="discountValue" class="font-semibold">0.00</span> (<span id="discountPercent" class="font-semibold">0</span>%)</p>
+        <p class="final-price"><i class="fas fa-wallet text-[--primary-blue]"></i> Valor Final: R$ <span id="finalPrice" class="font-semibold">0.00</span></p>
+      </div>
+      <button
+        id="printButton"
+        class="btn-primary mt-8 w-full sm:w-auto mx-auto"
+        aria-label="Imprimir resumo dos exames selecionados"
+      >
+        <i class="fas fa-print mr-2"></i> Imprimir Resumo
+      </button>
+    </div>
+
+    <!-- Aba de desconto -->
+    <div class="card">
+      <button
+        id="discountToggle"
+        class="btn-primary w-full sm:w-auto mx-auto"
+        aria-label="Abrir ou fechar aba de desconto"
+      >
+        <i class="fas fa-percent mr-2"></i> Adicionar Desconto
+      </button>
+      <div id="discountSection" class="mt-4">
+        <label for="discountInput" class="block text-[--text-dark] font-medium text-lg mb-2 text-center">Desconto (%):</label>
+        <div class="search-container mx-auto">
+          <input
+            type="number"
+            id="discountInput"
+            min="0"
+            max="100"
+            step="0.01"
+            placeholder="Ex.: 10.00 para 10%"
+            class="custom-input"
+            aria-label="Inserir percentual de desconto"
+          >
+          <i class="fas fa-percent"></i>
+        </div>
+        <button
+          id="applyDiscount"
+          class="btn-accent mt-4 w-full sm:w-auto mx-auto"
+          aria-label="Aplicar desconto ao valor total"
+        >
+          <i class="fas fa-check mr-2"></i> Aplicar Desconto
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Lista de exames
+    const exams = [
+      { name: "Abertura Coronária e Encaminhamento para Endodontia", price: 60.00 },
+      { name: "Acetilcolinesterase Plasmática", price: 20.00 },
+      { name: "Ácido 2 Etoxiacético", price: 549.00 },
+      { name: "Ácido Fenilglioxílico (Final da Jornada de Trabalho)", price: 41.00 },
+      { name: "Ácido Fólico", price: 72.00 },
+      { name: "Ácido Fórmico", price: 110.00 },
+      { name: "Ácido Láctico", price: 100.00 },
+      { name: "Ácido S-Fenilmercaptúrico", price: 388.00 },
+      { name: "Ácido Tricloroacético", price: 99.00 },
+      { name: "Ácido Úrico", price: 20.00 },
+      { name: "Acuidade Visual", price: 22.00 },
+      { name: "Albumina", price: 20.00 },
+      { name: "Aldolase", price: 28.00 },
+      { name: "Alfa 1 Glicoproteína Ácida", price: 41.00 },
+      { name: "Alfa-Fetoproteína", price: 66.00 },
+      { name: "Alveoloplastia (Por Segmento)", price: 160.00 },
+      { name: "Amilase", price: 66.00 },
+      { name: "Anticorpo Anti-Microssomal ou Anti-TPO ou Anti PER", price: 20.00 },
+      { name: "Anticorpos Anti HIV1 + HIV2 (Triagem)", price: 75.00 },
+      { name: "Anticorpos Anti HIV1 + HIV2 Western Blot - Teste", price: 392.00 },
+      { name: "Anticorpos Anti Tireoglobulina", price: 77.00 },
+      { name: "Antiestreptolisina O", price: 20.00 },
+      { name: "Antígeno Carcinoembrionário - (CEA)", price: 62.00 },
+      { name: "Waller Rose", price: 22.00 },
+      { name: "Zika Virus-Sorologia Total - IgG", price: 254.00 },
+      { name: "Zika Virus-Sorologia Total - IgM", price: 281.00 }
+    ];
+
+    // Lista para rastrear a ordem dos exames selecionados
+    let selectedExamsOrder = [];
+
+    // Função para renderizar a tabela de exames selecionados
+    function renderSelectedExams() {
+      const selectedExamTable = document.getElementById("selectedExamTable");
+      selectedExamTable.innerHTML = "";
+
+      if (selectedExamsOrder.length === 0) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="text-center text-[--text-light]" colspan="2">
+            Nenhum exame selecionado
+          </td>
+        `;
+        selectedExamTable.appendChild(row);
+        return;
+      }
+
+      selectedExamsOrder.forEach(exam => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${exam.name}</td>
+          <td>R$ ${exam.price.toFixed(2)}</td>
+        `;
+        selectedExamTable.appendChild(row);
+      });
+
+      updateTotal();
+    }
+
+    // Função para renderizar a lista de checkboxes com filtro
+    function renderExamCheckboxes(filterText = "") {
+      const examListContainer = document.getElementById("examListContainer");
+      examListContainer.innerHTML = "";
+
+      const filteredExams = filterText
+        ? exams.filter(exam => exam.name.toLowerCase().includes(filterText.toLowerCase()))
+        : [];
+
+      if (filteredExams.length === 0 && filterText) {
+        const div = document.createElement("div");
+        div.textContent = "Nenhum exame encontrado";
+        div.className = "no-results";
+        examListContainer.appendChild(div);
+      } else {
+        filteredExams.forEach(exam => {
+          const div = document.createElement("div");
+          div.className = "exam-checkbox";
+          const isChecked = selectedExamsOrder.some(selected => selected.name === exam.name);
+          div.innerHTML = `
+            <input type="checkbox" id="exam-${exam.name}" value="${exam.name}" ${isChecked ? 'checked' : ''}>
+            <label for="exam-${exam.name}">${exam.name} <span>(R$ ${exam.price.toFixed(2)})</span></label>
+          `;
+          examListContainer.appendChild(div);
+
+          const checkbox = div.querySelector("input");
+          checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+              if (!selectedExamsOrder.some(selected => selected.name === exam.name)) {
+                selectedExamsOrder.push({ name: exam.name, price: exam.price });
+              }
+            } else {
+              selectedExamsOrder = selectedExamsOrder.filter(selected => selected.name !== exam.name);
+            }
+            renderSelectedExams();
+          });
+        });
+      }
+
+      examListContainer.style.display = filterText ? "block" : "none";
+    }
+
+    // Função para limpar todas as seleções
+    function clearSelections() {
+      selectedExamsOrder = [];
+      document.getElementById("examSearch").value = "";
+      document.getElementById("discountInput").value = "";
+      document.getElementById("totalPrice").textContent = "0.00";
+      document.getElementById("discountPercent").textContent = "0.00";
+      document.getElementById("discountValue").textContent = "0.00";
+      document.getElementById("finalPrice").textContent = "0.00";
+      renderSelectedExams();
+      renderExamCheckboxes();
+    }
+
+    // Função para atualizar o valor total
+    function updateTotal() {
+      let total = 0;
+
+      selectedExamsOrder.forEach(exam => {
+        total += exam.price;
+      });
+
+      let discountPercent = parseFloat(document.getElementById("discountInput").value) || 0;
+      if (discountPercent < 0) discountPercent = 0;
+      if (discountPercent > 100) discountPercent = 100;
+
+      const discountValue = total * (discountPercent / 100);
+      const finalPrice = Math.max(total - discountValue, 0);
+
+      document.getElementById("totalPrice").textContent = total.toFixed(2);
+      document.getElementById("discountPercent").textContent = discountPercent.toFixed(2);
+      document.getElementById("discountValue").textContent = discountValue.toFixed(2);
+      document.getElementById("finalPrice").textContent = finalPrice.toFixed(2);
+    }
+
+    // Função para imprimir o resumo
+    function printSummary() {
+      if (selectedExamsOrder.length === 0) {
+        alert("Por favor, selecione pelo menos um exame antes de imprimir.");
+        return;
+      }
+
+      const total = parseFloat(document.getElementById("totalPrice").textContent);
+      const discountPercent = parseFloat(document.getElementById("discountPercent").textContent);
+      const discountValue = parseFloat(document.getElementById("discountValue").textContent);
+      const finalPrice = parseFloat(document.getElementById("finalPrice").textContent);
+
+      let printContent = `
+        <html>
+        <head>
+          <title>Resumo de Exames</title>
+          <link href="dist/styles.css" rel="stylesheet">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+          <style>
+            @media print {
+              .no-print { display: none; }
+              @page { margin: 2cm; }
+            }
+            body {
+              font-family: 'Inter', sans-serif;
+              color: #000000;
+              background-color: white;
+              margin: 0;
+              padding: 2rem;
+              line-height: 1.5;
+            }
+            .print-container {
+              max-width: 800px;
+              margin: 0 auto;
+              padding: 1rem;
+              border: 1px solid #e5e7eb;
+              border-radius: 0.5rem;
+              background-color: var(--background-light);
+            }
+            .print-header {
+              margin-bottom: 2rem;
+              border-bottom: 2px solid var(--primary-blue);
+              padding-bottom: 1rem;
+            }
+            .print-header .header-container {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+            .print-header .logo-container img {
+              max-width: 120px;
+              height: auto;
+            }
+            .print-header .logo-container.right {
+              order: 2;
+            }
+            .print-header .title-container {
+              flex: 1;
+              text-align: center;
+              margin: 0 1rem;
+            }
+            .print-header h1 {
+              font-size: 1.75rem;
+              color: #000000;
+              margin: 0;
+            }
+            .print-header p {
+              color: #000000;
+              font-size: 0.9rem;
+              margin: 0.5rem 0 0;
+              text-align: center;
+            }
+            .print-table {
+              width: 100%;
+              border-collapse: separate;
+              border-spacing: 0;
+              margin-bottom: 2rem;
+              box-shadow: var(--card-shadow);
+            }
+            .print-table th {
+              background-color: var(--primary-blue);
+              color: white;
+              padding: 1rem;
+              font-weight: 600;
+              text-align: left;
+              border-bottom: 2px solid #d1d5db;
+            }
+            .print-table td {
+              padding: 1rem;
+              text-align: left;
+              border-bottom: 1px solid #e5e7eb;
+              color: #000000;
+            }
+            .print-table tr:nth-child(even) {
+              background-color: #f9fafb;
+            }
+            .print-table tr:hover {
+              background-color: #eff6ff;
+            }
+            .print-table th:first-child,
+            .print-table td:first-child {
+              border-left: 1px solid #e5e7eb;
+            }
+            .print-table th:last-child,
+            .print-table td:last-child {
+              border-right: 1px solid #e5e7eb;
+            }
+            .print-table th:first-child {
+              border-top-left-radius: 0.375rem;
+            }
+            .print-table th:last-child {
+              border-top-right-radius: 0.375rem;
+            }
+            .print-table tr:last-child td {
+              border-bottom: none;
+            }
+            .print-summary {
+              background-color: #eff6ff;
+              padding: 1.5rem;
+              border-radius: 0.5rem;
+              margin-bottom: 1.5rem;
+            }
+            .print-summary p {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              font-size: 1.1rem;
+              margin: 0.5rem 0;
+              color: #000000;
+            }
+            .print-summary .final-price {
+              font-size: 1.5rem;
+              font-weight: 600;
+              color: #000000;
+            }
+            .print-footer {
+              text-align: center;
+              color: #000000;
+              font-size: 0.9rem;
+              margin-top: 2rem;
+              border-top: 1px solid #e5e7eb;
+              padding-top: 1rem;
+            }
+.btn-primary {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  background-color: #1e40af !important; /* Light blue */
+  color: white !important; /* Black text */
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  text-align: center;
+  border: none;
+}
+.btn-primary:hover {
+  background-color: #1e40af !important; /* Same light blue on hover */
+  color: white !important; /* Same black text on hover */
+  transform: none; /* No movement on hover */
+}
+            .black-text {
+              color: black !important;
+            }
+            @media print {
+              .btn-primary {
+                background-color: var(--primary-blue) !important;
+                color: white !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            <div class="print-header">
+              <div class="header-container">
+                <div class="logo-container">
+                  <img src="img/sesi.jpg" alt="SESI Logo" aria-label="Logotipo do SESI">
+                </div>
+                <div class="title-container">
+                  <h1>Resumo de Exames Laboratoriais</h1>
+                </div>
+                <div class="logo-container right">
+                  <img src="img/melhoria.jpg" alt="Melhoria Logo" aria-label="Logotipo da Melhoria">
+                </div>
+              </div>
+              <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+            </div>
+            <h2 style="color: #000000; font-size: 1.25rem; margin-bottom: 1rem;">Exames Selecionados</h2>
+            <table class="print-table">
+              <thead>
+                <tr>
+                  <th class="black-text">Exame</th>
+                  <th class="black-text">Preço (R$)</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+
+      if (selectedExamsOrder.length === 0) {
+        printContent += `
+          <tr>
+            <td colspan="2" style="text-align: center; color: #000000;">
+              Nenhum exame selecionado
+            </td>
+          </tr>
+        `;
+      } else {
+        selectedExamsOrder.forEach(exam => {
+          printContent += `
+            <tr>
+              <td>${exam.name}</td>
+              <td>R$ ${exam.price.toFixed(2)}</td>
+            </tr>
+          `;
+        });
+      }
+
+      printContent += `
+              </tbody>
+            </table>
+            <div class="print-summary">
+              <p><i class="fas fa-money-bill-wave" style="color: var(--accent-green);"></i> Valor Total: R$ <span style="font-weight: 600;">${total.toFixed(2)}</span></p>
+              <p><i class="fas fa-percentage" style="color: var(--accent-green);"></i> Desconto: R$ <span style="font-weight: 600;">${discountValue.toFixed(2)}</span> (<span style="font-weight: 600;">${discountPercent.toFixed(2)}</span>%)</p>
+              <p class="final-price"><i class="fas fa-wallet" style="color: var(--primary-blue);"></i> Total a Pagar: R$ <span>${finalPrice.toFixed(2)}</span></p>
+            </div>
+            <div class="print-footer">
+              <p>Gerado por: Sistema de Consulta de Preços de Exames SESI Saúde</p>
+              <p>Data: ${new Date().toLocaleString('pt-BR')}</p>
+            </div>
+            <button id="printButtonWindow" class="btn-primary">
+              <i class="fas fa-print mr-2"></i> Imprimir
+            </button>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const printWindow = window.open('', '_blank');
+      if (printWindow && printWindow.document) {
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        // Adicionar evento de clique ao botão de impressão na janela de impressão
+        printWindow.document.getElementById('printButtonWindow').addEventListener('click', () => {
+          printWindow.print();
+        });
+      } else {
+        alert('Não foi possível abrir a janela de impressão. Verifique se os pop-ups estão habilitados.');
+      }
+    }
+
+    // Evento de busca por texto para filtrar checkboxes
+    const examSearch = document.getElementById("examSearch");
+    let debounceTimeout;
+    examSearch.addEventListener("input", (e) => {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => {
+        const inputText = e.target.value.trim();
+        renderExamCheckboxes(inputText);
+      }, 150);
+    });
+
+    // Mostrar/esconder aba de desconto com animação
+    document.getElementById("discountToggle").addEventListener("click", () => {
+      const discountSection = document.getElementById("discountSection");
+      discountSection.classList.toggle("active");
+    });
+
+    // Aplicar desconto
+    document.getElementById("applyDiscount").addEventListener("click", () => {
+      updateTotal();
+    });
+
+    // Limpar seleção
+    document.getElementById("clearSelection").addEventListener("click", clearSelections);
+
+    // Evento de impressão
+    document.getElementById("printButton").addEventListener("click", printSummary);
+
+    // Inicializar a tabela de exames selecionados e a lista de checkboxes
+    renderSelectedExams();
+    renderExamCheckboxes();
+  </script>
+</body>
+</html>
