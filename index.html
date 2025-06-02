@@ -268,6 +268,13 @@
         flex-direction: column;
         gap: 0.5rem;
       }
+      .print-footer a {
+    text-decoration: none;
+    color: inherit;
+  }
+  .print-footer a:hover {
+    text-decoration: underline;
+  }
     }
     @media print {
       .btn-primary {
@@ -344,7 +351,7 @@
       <h2 class="mb-6 text-center text-xl">Resumo</h2>
       <div class="space-y-4 text-lg text-center">
         <p><i class="fas fa-money-bill-wave text-[--accent-green]"></i> Valor Total: R$ <span id="totalPrice" class="font-semibold">0.00</span></p>
-        <p><i class="fas fa-percentage text-[--accent-green]"></i> Desconto Padrão: R$ <span id="discountValue" class="font-semibold">0.00</span> (<span id="discountPercent" class="font-semibold">0</span>%)</p>
+        <p><i class="fas fa-percentage text-[--accent-green]"></i> Desconto Indústria: R$ <span id="discountValue" class="font-semibold">0.00</span> (<span id="discountPercent" class="font-semibold">0</span>%)</p>
         <p><i class="fas fa-star text-[--accent-purple]"></i> Desconto Promocional: R$ <span id="promoDiscountValue" class="font-semibold">0.00</span> (<span id="promoDiscountPercent" class="font-semibold">0</span>%)</p>
         <p class="final-price"><i class="fas fa-wallet text-[--primary-blue]"></i> Valor Final: R$ <span id="finalPrice" class="font-semibold">0.00</span></p>
       </div>
@@ -379,7 +386,7 @@
       </button>
       <div id="discountSection" class="mt-4">
         <div class="discount-container">
-          <label for="discountInput" class="block text-[--text-dark] font-medium text-lg mb-2 text-center">Desconto Padrão (%):</label>
+          <label for="discountInput" class="block text-[--text-dark] font-medium text-lg mb-2 text-center">Desconto Indústria (%):</label>
           <div class="search-container mx-auto">
             <input
               type="number"
@@ -389,7 +396,7 @@
               step="0.01"
               placeholder="Ex.: 10.00 para 10%"
               class="custom-input"
-              aria-label="Inserir percentual de desconto padrão"
+              aria-label="Inserir percentual de desconto Indústria"
             >
             <i class="fas fa-percent"></i>
           </div>
@@ -414,7 +421,7 @@
           <button
             id="applyDiscount"
             class="btn-accent"
-            aria-label="Aplicar desconto padrão ao valor total"
+            aria-label="Aplicar desconto Indústria ao valor total"
           >
             <i class="fas fa-check mr-2"></i> Aplicar Desconto
           </button>
@@ -1033,7 +1040,7 @@ const exams = [
       document.getElementById("finalPrice").textContent = finalPrice.toFixed(2);
     }
 
-    // Função para aplicar desconto padrão
+    // Função para aplicar desconto Indústria
     function applyDiscount() {
       updateTotal();
     }
@@ -1284,7 +1291,7 @@ const exams = [
             </table>
             <div class="print-summary">
               <p><i class="fas fa-money-bill-wave" style="color: var(--accent-green);"></i> Valor Total: R$ <span style="font-weight: 600;">${total.toFixed(2)}</span></p>
-              <p><i class="fas fa-percentage" style="color: var(--accent-green);"></i> Desconto Padrão: R$ <span style="font-weight: 600;">${discountValue.toFixed(2)}</span> (<span style="font-weight: 600;">${discountPercent.toFixed(2)}</span>%)</p>
+              <p><i class="fas fa-percentage" style="color: var(--accent-green);"></i> Desconto Indústria: R$ <span style="font-weight: 600;">${discountValue.toFixed(2)}</span> (<span style="font-weight: 600;">${discountPercent.toFixed(2)}</span>%)</p>
       `;
 
       // Conditionally add promotional discount line only if promoDiscountPercent > 0
@@ -1302,10 +1309,10 @@ const exams = [
               <strong>AVISO IMPORTANTE</strong><br>
               Este orçamento é válido até o final do ano vigente (${currentYear}) e está sujeito a alterações sem aviso prévio. Os valores aqui apresentados podem sofrer variações conforme períodos promocionais ou campanhas especiais.
             </div>
-            <div class="print-footer">
-              <p>Endereço: Rua Frei Cassimiro, 88 - Santo Amaro, Recife - PE, 50100-260</p>
-              <p>Data: ${new Date().toLocaleString('pt-BR')}</p>
-            </div>
+<div class="print-footer">
+  <p>Endereço: <a href="https://www.google.com/maps/place/Rua+Frei+Cassimiro,+88,+Santo+Amaro,+Recife,+PE,+50100-260" target="_blank">Rua Frei Cassimiro, 88 - Santo Amaro, Recife - PE, 50100-260</a></p>
+  <p>Data: ${new Date().toLocaleString('pt-BR')}</p>
+</div>
             <button id="printButtonWindow" class="btn-primary">
               <i class="fas fa-print mr-2"></i> Imprimir
             </button>
@@ -1343,7 +1350,7 @@ const exams = [
       discountSection.classList.toggle("active");
     });
 
-    // Aplicar desconto padrão
+    // Aplicar desconto Indústria
     document.getElementById("applyDiscount").addEventListener("click", applyDiscount);
 
     // Aplicar desconto promocional
