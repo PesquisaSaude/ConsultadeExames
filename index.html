@@ -1172,239 +1172,237 @@ const exams = [
     }
 
     function printSummary() {
-      if (selectedExamsOrder.length === 0) {
-        alert("Selecione pelo menos um exame antes de imprimir.");
-        return;
-      }
-      if (!validatePhone() && document.getElementById("telefoneInput").value !== "") {
-        alert("Corrija o número de telefone antes de imprimir.");
-        return;
-      }
-      const total = parseFloat(document.getElementById("totalPrice").textContent.replace(',', '.'));
-      const discountPercent = parseFloat(document.getElementById("discountPercent").textContent);
-      const discountValue = parseFloat(document.getElementById("discountValue").textContent.replace(',', '.'));
-      const promoDiscountPercent = parseFloat(document.getElementById("promoDiscountPercent").textContent);
-      const promoDiscountValue = parseFloat(document.getElementById("promoDiscountValue").textContent.replace(',', '.'));
-      const finalPrice = parseFloat(document.getElementById("finalPrice").textContent.replace(',', '.'));
-      const responsible = escapeHTML(document.getElementById("responsibleInput").value || "Não informado");
-      const solicitante = escapeHTML(document.getElementById("solicitanteInput").value || "Não informado");
-      const telefone = escapeHTML(document.getElementById("telefoneInput").value || "Não informado");
-      const promoTypeValue = document.getElementById("promoType").value;
-      const promoType = promoTypeValue === "Outros" ? escapeHTML(document.getElementById("otherPromoInput").value || "Não informado") : escapeHTML(promoTypeValue || "Não informado");
-      const promoValidity = escapeHTML(document.getElementById("promoValidity").value || "Não informado");
-      const isIndustryDiscountApplied = document.getElementById("enableIndustryDiscount").checked && discountPercent > 0;
-      const isPromoDiscountApplied = document.getElementById("enablePromoDiscount").checked && promoDiscountPercent > 0;
-      const currentYear = new Date().getFullYear();
-      let printContent = `
-        <html>
-        <head>
-          <title>Resumo de Exames</title>
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-          <style>
-            @media print { 
-              .no-print { display: none; } 
-              @page { margin: 2cm; } 
-            }
-            body { 
-              font-family: 'Inter', sans-serif; 
-              color: #111827; 
-              background: white; 
-              margin: 0; 
-              padding: 2rem; 
-            }
-            .print-container { 
-              max-width: 800px; 
-              margin: 0 auto; 
-              padding: 1.5rem; 
-              border: 1px solid #e5e7eb; 
-              border-radius: 0.75rem; 
-              background: #ffffff; 
-            }
-            .print-header { 
-              margin-bottom: 2rem; 
-              border-bottom: 2px solid #2563eb; 
-              padding-bottom: 1rem; 
-            }
-            .print-header .header-container { 
-              display: flex; 
-              align-items: center; 
-              justify-content: space-between; 
-            }
-            .print-header .logo-container img { 
-              max-width: 120px; 
-              height: auto; 
-            }
-            .print-header .title-container { 
-              flex: 1; 
-              text-align: center; 
-            }
-            .print-header h1 { 
-              font-size: 1.75rem; 
-              color: #111827; 
-              margin: 0; 
-            }
-            .print-header p { 
-              color: #111827; 
-              font-size: 0.875rem; 
-              margin: 0.5rem 0 0; 
-            }
-            .print-exams-section { 
-              margin-bottom: 2rem; 
-            }
-            .print-exams-section h2 { 
-              font-size: 1.25rem; 
-              margin-bottom: 1rem; 
-              text-align: center; 
-              color: #2563eb; 
-            }
-            .print-table { 
-              width: 100%; 
-              border-collapse: collapse; 
-            }
-            .print-table th { 
-              background-color: #2563eb; 
-              color: white; 
-              padding: 0.75rem; 
-              text-align: left; 
-              font-weight: 600; 
-              font-size: 0.875rem; 
-            }
-            .print-table td { 
-              padding: 0.75rem; 
-              text-align: left; 
-              border-bottom: 1px solid #e5e7eb; 
-              font-size: 0.875rem; 
-            }
-            .print-table tr:hover { 
-              background-color: #f3f4f6; 
-            }
-            .print-summary { 
-              background: #f0f7ff; 
-              padding: 1.5rem; 
-              border-radius: 0.75rem; 
-              margin-bottom: 1.5rem; 
-            }
-            .print-summary p { 
-              display: flex; 
-              align-items: center; 
-              gap: 0.5rem; 
-              font-size: 1rem; 
-              margin: 0.5rem 0; 
-            }
-            .print-summary .final-price { 
-              font-size: 1.25rem; 
-              font-weight: 600; 
-              color: #2563eb; 
-            }
-            .print-warning { 
-              background: #fef2f2; 
-              padding: 1rem; 
-              border-radius: 0.5rem; 
-              margin-bottom: 1.5rem; 
-              border: 1px solid #ef4444; 
-              color: #111827; 
-              font-size: 0.875rem; 
-            }
-            .print-warning i { 
-              margin-right: 0.5rem; 
-              color: #ef4444; 
-            }
-            .print-footer { 
-              text-align: center; 
-              color: #111827; 
-              font-size: 0.875rem; 
-              margin-top: 2rem; 
-              border-top: 1px solid #e5e7eb; 
-              padding-top: 1rem; 
-            }
-            .btn-primary { 
-              padding: 0.75rem 1.5rem; 
-              border-radius: 0.5rem; 
-              background: #2563eb; 
-              color: white; 
-              font-weight: 500; 
-              cursor: pointer; 
-              border: none; 
-            }
-          </style>
-        </head>
-        <body>
-          <div class="print-container">
-            <div class="print-header">
-              <div class="header-container">
-                <div class="logo-container">
-                  <img src="img/sesi.jpg" alt="SESI Logo">
-                </div>
-                <div class="title-container">
-                  <h1>Resumo de Exames e Especialidades</h1>
-                </div>
-                <div class="logo-container">
-                  <img src="img/melhoria.jpg" alt="Melhoria Logo">
-                </div>
-              </div>
-              <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-              <p>Responsável: ${responsible}</p>
-              <p>Solicitante: ${solicitante}</p>
-              <p>Telefone: ${telefone}</p>
+  if (selectedExamsOrder.length === 0) {
+    alert("Selecione pelo menos um exame antes de imprimir.");
+    return;
+  }
+  if (!validatePhone() && document.getElementById("telefoneInput").value !== "") {
+    alert("Corrija o número de telefone antes de imprimir.");
+    return;
+  }
+  const total = parseFloat(document.getElementById("totalPrice").textContent.replace(',', '.'));
+  const discountPercent = parseFloat(document.getElementById("discountPercent").textContent);
+  const discountValue = parseFloat(document.getElementById("discountValue").textContent.replace(',', '.'));
+  const promoDiscountPercent = parseFloat(document.getElementById("promoDiscountPercent").textContent);
+  const promoDiscountValue = parseFloat(document.getElementById("promoDiscountValue").textContent.replace(',', '.'));
+  const finalPrice = parseFloat(document.getElementById("finalPrice").textContent.replace(',', '.'));
+  const responsible = escapeHTML(document.getElementById("responsibleInput").value || "Não informado");
+  const solicitante = escapeHTML(document.getElementById("solicitanteInput").value || "Não informado");
+  const telefone = escapeHTML(document.getElementById("telefoneInput").value || "Não informado");
+  const promoTypeValue = document.getElementById("promoType").value;
+  const promoType = promoTypeValue === "Outros" ? escapeHTML(document.getElementById("otherPromoInput").value || "Não informado") : escapeHTML(promoTypeValue || "Não informado");
+  const promoValidity = escapeHTML(document.getElementById("promoValidity").value || "Não informado");
+  const isIndustryDiscountApplied = document.getElementById("enableIndustryDiscount").checked && discountPercent > 0;
+  const isPromoDiscountApplied = document.getElementById("enablePromoDiscount").checked && promoDiscountPercent > 0;
+  const currentYear = new Date().getFullYear();
+  let printContent = `
+    <html>
+    <head>
+      <title>Resumo de Exames</title>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+      <style>
+        @media print { 
+          .no-print { display: none; } 
+          @page { margin: 2cm; } 
+        }
+        body { 
+          font-family: 'Inter', sans-serif; 
+          color: #111827; 
+          background: white; 
+          margin: 0; 
+          padding: 2rem; 
+        }
+        .print-container { 
+          max-width: 800px; 
+          margin: 0 auto; 
+          padding: 1.5rem; 
+          border: 1px solid #e5e7eb; 
+          border-radius: 0.75rem; 
+          background: #ffffff; 
+        }
+        .print-header { 
+          margin-bottom: 2rem; 
+          border-bottom: 2px solid #2563eb; 
+          padding-bottom: 1rem; 
+        }
+        .print-header .header-container { 
+          display: flex; 
+          align-items: center; 
+          justify-content: space-between; 
+        }
+        .print-header .logo-container img { 
+          max-width: 120px; 
+          height: auto; 
+        }
+        .print-header .title-container { 
+          flex: 1; 
+          text-align: center; 
+        }
+        .print-header h1 { 
+          font-size: 1.75rem; 
+          color: #111827; 
+          margin: 0; 
+        }
+        .print-header p { 
+          color: #111827; 
+          font-size: 0.875rem; 
+          margin: 0.5rem 0; 
+        }
+        .print-exams-section { 
+          margin-bottom: 2rem; 
+        }
+        .print-exams-section h2 { 
+          font-size: 1.25rem; 
+          margin-bottom: 1rem; 
+          text-align: center; 
+          color: #2563eb; 
+        }
+        .print-table { 
+          width: 100%; 
+          border-collapse: collapse; 
+        }
+        .print-table th { 
+          background-color: #2563eb; 
+          color: white; 
+          padding: 0.75rem; 
+          text-align: left; 
+          font-weight: 600; 
+          font-size: 0.875rem; 
+        }
+        .print-table td { 
+          padding: 0.75rem; 
+          text-align: left; 
+          border-bottom: 1px solid #e5e7eb; 
+          font-size: 0.875rem; 
+        }
+        .print-table tr:hover { 
+          background-color: #f3f4f6; 
+        }
+        .print-summary { 
+          background: #f0f7ff; 
+          padding: 1.5rem; 
+          border-radius: 0.75rem; 
+          margin-bottom: 1.5rem; 
+        }
+        .print-summary p { 
+          display: flex; 
+          align-items: center; 
+          gap: 0.5rem; 
+          font-size: 1rem; 
+          margin: 0.5rem 0; 
+        }
+        .print-summary .final-price { 
+          font-size: 1.25rem; 
+          font-weight: 600; 
+          color: #2563eb; 
+        }
+        .print-warning { 
+          background: #fef2f2; 
+          padding: 1rem; 
+          border-radius: 0.5rem; 
+          margin-bottom: 1.5rem; 
+          border: 1px solid #ef4444; 
+          color: #111827; 
+          font-size: 0.875rem; 
+        }
+        .print-warning i { 
+          margin-right: 0.5rem; 
+          color: #ef4444; 
+        }
+        .print-footer { 
+          text-align: center; 
+          color: #111827; 
+          font-size: 0.875rem; 
+          margin-top: 2rem; 
+          border-top: 1px solid #e5e7eb; 
+          padding-top: 1rem; 
+        }
+        .btn-primary { 
+          padding: 0.75rem 1.5rem; 
+          border-radius: 0.5rem; 
+          background: #2563eb; 
+          color: white; 
+          font-weight: 500; 
+          cursor: pointer; 
+          border: none; 
+        }
+      </style>
+    </head>
+    <body>
+      <div class="print-container">
+        <div class="print-header">
+          <div class="header-container">
+            <div class="logo-container">
+              <img src="img/sesi.jpg" alt="SESI Logo">
             </div>
-            <div class="print-exams-section">
-              <h2>Exames Selecionados</h2>
-              <table class="print-table">
-                <thead>
-                  <tr>
-                    <th>Exame</th>
-                    <th>R$</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${selectedExamsOrder.length === 0 ? `
-                    <tr>
-                      <td colspan="2" style="text-align: center; color: #6b7280;">Nenhum exame selecionado</td>
-                    </tr>
-                  ` : selectedExamsOrder.map(exam => `
-                    <tr>
-                      <td>${exam.name}</td>
-                      <td>R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
+            <div class="title-container">
+              <h1>Resumo de Exames Laboratoriais</h1>
             </div>
-            <div class="print-summary">
-              <p><i class="fas fa-money-bill-wave"></i> Valor Total: R$ <span>${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
-              ${isIndustryDiscountApplied ? `<p><i class="fas fa-percentage"></i> Desconto Indústria: R$ <span>${discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (<span>${discountPercent.toFixed(2)}</span>%)</p>` : ''}
-              ${isPromoDiscountApplied ? `
-                <p><i class="fas fa-star"></i> Desconto Promocional: R$ <span>${promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (<span>${promoDiscountPercent.toFixed(2)}</span>%)</p>
-                ${promoType !== "Não informado" ? `
-                  <p><i class="fas fa-tag"></i> Tipo de Promoção: <span>${promoType}</span></p>
-                  <p><i class="fas fa-calendar-alt"></i> Vigência: <span>${promoValidity}</span></p>
-                ` : ''}
-              ` : ''}
-              <p class="final-price"><i class="fas fa-wallet"></i> Total do Pagamento: R$ <span>${finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
+            <div class="logo-container">
+              <img src="img/melhoria.jpg" alt="Melhoria Logo">
             </div>
-            <div class="print-warning">
-              <i class="fas fa-exclamation-triangle"></i>
-              <strong>AVISO IMPORTANTE</strong><br>
-              Este orçamento é válido até o final do ano vigente (${currentYear}) e está sujeito a alterações sem aviso prévio. Os valores aqui apresentados podem sofrer variações conforme períodos promocionais ou campanhas especiais.
-            </div>
-            <div class="print-footer">
-              <p>Endereço: <a href="https://www.google.com/maps/place/Rua+Frei+Cassimiro,+88,+Santo+Amaro,+Recife,+PE,+50100-260" target="_blank">Rua Frei Cassimiro, 88 - Santo Amaro, Recife - PE, 50100-260</a></p>
-              <p>Data: ${new Date().toLocaleString('pt-BR')}</p>
-            </div>
-            <button id="printButtonWindow" class="btn-primary no-print"><i class="fas fa-print mr-2"></i> Imprimir</button>
           </div>
-        </body>
-        </html>
-      `;
-      const printWindow = window.open('', '_blank');
-      if (printWindow && printWindow.document) {
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-        printWindow.document.getElementById('printButtonWindow').addEventListener('click', () => printWindow.print());
-      } else {
-        alert('Não foi possível abrir a janela de impressão. Verifique os pop-ups.');
-      }
-    }
+          <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+          <p>Responsável: ${responsible}</p>
+          <p>Solicitante: ${solicitante}</p>
+          <p>Telefone: ${telefone}</p>
+        </div>
+        <div class="print-exams-section">
+          <h2>Exames Selecionados</h2>
+          <table class="print-table">
+            <thead>
+              <tr>
+                <th>Exame</th>
+                <th>R$</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${selectedExamsOrder.length === 0 ? `
+                <tr>
+                  <td colspan="2" style="text-align: center; color: #6b7280;">Nenhum exame selecionado</td>
+                </tr>
+              ` : selectedExamsOrder.map(exam => `
+                <tr>
+                  <td>${exam.name}</td>
+                  <td>R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="print-summary">
+          <p><i class="fas fa-money-bill-wave"></i> Valor Total: R$ <span>${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
+          ${isIndustryDiscountApplied ? `<p><i class="fas fa-percentage"></i> Desconto Indústria: R$ <span>${discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (<span>${discountPercent.toFixed(2)}</span>%)</p>` : ''}
+          ${isPromoDiscountApplied ? `<p><i class="fas fa-star"></i> Desconto Promocional: R$ <span>${promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (<span>${promoDiscountPercent.toFixed(2)}</span>%)</p>` : ''}
+          <p class="final-price"><i class="fas fa-wallet"></i> Total do Pagamento: R$ <span>${finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
+          ${isPromoDiscountApplied && promoType !== "Não informado" ? `
+            <p><i class="fas fa-tag"></i> Tipo de Promoção: <span>${promoType}</span></p>
+            <p><i class="fas fa-calendar-alt"></i> Vigência: <span>${promoValidity}</span></p>
+          ` : ''}
+        </div>
+        <div class="print-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>AVISO IMPORTANTE</strong><br>
+          Este orçamento é válido até o final do ano vigente (${currentYear}) e está sujeito a alterações sem aviso prévio. Os valores aqui apresentados podem sofrer variações conforme períodos promocionais ou campanhas especiais.
+        </div>
+        <div class="print-footer">
+          <p>Endereço: <a href="https://www.google.com/maps/place/Rua+Frei+Cassimiro,+88,+Santo+Amaro,+Recife,+PE,+50100-260" target="_blank">Rua Frei Cassimiro, 88 - Santo Amaro, Recife - PE, 50100-260</a></p>
+          <p>Data: ${new Date().toLocaleString('pt-BR')}</p>
+        </div>
+        <button id="printButtonWindow" class="btn-primary no-print"><i class="fas fa-print mr-2"></i> Imprimir</button>
+      </div>
+    </body>
+    </html>
+  `;
+  const printWindow = window.open('', '_blank');
+  if (printWindow && printWindow.document) {
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.document.getElementById('printButtonWindow').addEventListener('click', () => printWindow.print());
+  } else {
+    alert('Não foi possível abrir a janela de impressão. Verifique os pop-ups.');
+  }
+}
 
     let debounceTimeout;
     document.getElementById("examSearch").addEventListener("input", (e) => {
