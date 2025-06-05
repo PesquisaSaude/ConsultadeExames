@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Consulta de Preços de Exames Laboratoriais</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
       --primary-blue: #2563eb;
@@ -26,7 +28,7 @@
     }
     .main-container {
       padding: 2rem;
-      max-width: 98rem;
+      max-width: 78rem;
       margin: 0 auto;
     }
     .header-container {
@@ -84,6 +86,11 @@
     .custom-input.error {
       border-color: var(--error-red);
     }
+    .discount-input {
+      width: 20%;
+      min-width: 100px;
+      padding: 0.75rem 2.5rem;
+    }
     .custom-select {
       border: 1px solid var(--input-border);
       border-radius: 0.5rem;
@@ -110,20 +117,23 @@
       font-size: 1rem;
     }
     .search-container.responsible-container {
-      max-width: 70rem; /* Specific width for Responsável */
+      max-width: 70rem;
     }
     .search-container.solicitante-container {
-      max-width: 70rem; /* Specific width for Solicitante */
+      max-width: 70rem;
     }
     .phone-container {
-      max-width: 16rem; /* Specific width for Telefone */
+      max-width: 16rem;
     }
     .info-container {
       display: flex;
       flex-wrap: nowrap;
-      gap: 10rem;
+      gap: 1rem;
       margin-bottom: 0.75rem;
       justify-content: flex-start;
+      background-color: #f0f7ff;
+      padding: 1rem;
+      border-radius: 0.75rem;
     }
     .info-container .search-container,
     .info-container .phone-container {
@@ -273,8 +283,23 @@
     }
     .summary-card .final-price {
       font-size: 1.25rem;
-      color: var(--primary-blue);
       font-weight: 600;
+      color: var(--primary-blue);
+    }
+    .summary-card i.fa-money-bill-wave {
+      color: var(--accent-green);
+    }
+    .summary-card i.fa-percentage {
+      color: var(--accent-green);
+    }
+    .summary-card i.fa-star {
+      color: var(--accent-purple);
+    }
+    .summary-card i.fa-wallet {
+      color: var(--primary-blue);
+    }
+    .space-y-3 > * + * {
+      margin-top: 0.75rem;
     }
     #discountSection {
       transition: max-height 0.5s ease, opacity 0.5s ease;
@@ -329,6 +354,7 @@
       .info-container {
         flex-direction: column;
         gap: 0.5rem;
+        padding: 1rem;
       }
       .info-container .search-container,
       .info-container .phone-container {
@@ -344,6 +370,10 @@
       }
       .promo-details.active {
         flex-direction: column;
+      }
+      .discount-input {
+        width: 100%;
+        min-width: unset;
       }
     }
     @media print {
@@ -408,10 +438,10 @@
       <h2 class="mb-6">Resumo</h2>
       <div class="space"></div>
       <div class="space-y-3">
-        <p><i class="fas fa-money-bill-wave text-[--accent-green]"></i> Valor Total: R$ <span id="totalPrice" class="font-semibold">0,00</span></p>
-        <p><i class="fas fa-percentage text-[--accent-green]"></i> Desconto Indústria: R$ <span id="discountValue" class="font-semibold">0,00</span> (<span id="discountPercent" class="font-semibold">0</span>%)</p>
-        <p><i class="fas fa-star text-[--accent-purple]"></i> Desconto Promocional: R$ <span id="promoDiscountValue" class="font-semibold">0,00</span> (<span id="promoDiscountPercent" class="font-semibold">0</span>%)</p>
-        <p class="final-price"><i class="fas fa-wallet text-[--primary-blue]"></i> Valor Final: R$ <span id="finalPrice" class="font-semibold">0,00</span></p>
+        <p><i class="fas fa-money-bill-wave"></i> Valor Total: R$ <span id="totalPrice" class="font-semibold">0,00</span></p>
+        <p><i class="fas fa-percentage"></i> Desconto Indústria: R$ <span id="discountValue" class="font-semibold">0,00</span> (<span id="discountPercent" class="font-semibold">0</span>%)</p>
+        <p><i class="fas fa-star"></i> Desconto Promocional: R$ <span id="promoDiscountValue" class="font-semibold">0,00</span> (<span id="promoDiscountPercent" class="font-semibold">0</span>%)</p>
+        <p class="final-price"><i class="fas fa-wallet"></i> Valor Final: R$ <span id="finalPrice" class="font-semibold">0,00</span></p>
       </div>
       <div class="space"></div>
       <div class="mt-6">
@@ -420,15 +450,17 @@
         <div class="info-container">
           <div class="search-container responsible-container">
             <label for="responsibleInput">Responsável</label>
-            <input type="text" id="responsibleInput" class="custom-input" placeholder="Nome do responsável" aria-label="Digite o nome do responsável">
+            <input type="text" id="responsibleInput" class="custom-input" placeholder="Nome responsável" aria-label="Digite o nome do responsável">
+            <i class="fas fa-user"></i>
           </div>
           <div class="search-container solicitante-container">
             <label for="solicitanteInput">Solicitante</label>
-            <input type="text" id="solicitanteInput" class="custom-input" placeholder="Nome do solicitante" aria-label="Digite o nome do solicitante">
+            <input type="text" id="solicitanteInput" class="custom-input" placeholder="Nome solicitante" aria-label="Digite o nome do solicitante">
+            <i class="fas fa-user"></i>
           </div>
           <div class="phone-container">
             <label for="telefoneInput">Telefone</label>
-            <input type="tel" id="telefoneInput" class="custom-input" placeholder="11987654321" aria-label="Digite o número de telefone (10 ou 11 dígitos)" pattern="^\d{10,11}$">
+            <input type="tel" id="telefoneInput" class="custom-input" placeholder="Contato" aria-label="Digite o número de telefone (10 ou 11 dígitos)" pattern="^\d{10,11}$">
             <i class="fas fa-phone"></i>
             <div id="phoneError" class="error-message">Digite 10 ou 11 dígitos numéricos</div>
           </div>
@@ -449,7 +481,7 @@
             <input type="checkbox" id="enableIndustryDiscount" aria-label="Habilitar desconto Indústria"> Desconto Indústria
           </label>
           <div class="search-container mx-auto">
-            <input type="number" id="discountInput" min="0" max="100" step="0.01" placeholder="Ex.: 10.00" class="custom-input" aria-label="Percentual de desconto da indústria" disabled>
+            <input type="number" id="discountInput" min="0" max="100" step="0.01" placeholder="Ex.: 10.00" class="custom-input discount-input" aria-label="Percentual de desconto da indústria" disabled>
             <i class="fas fa-percent"></i>
           </div>
         </div>
@@ -458,7 +490,7 @@
             <input type="checkbox" id="enablePromoDiscount" aria-label="Habilitar desconto promocional"> Desconto Promocional
           </label>
           <div class="search-container mx-auto">
-            <input type="number" id="promoDiscountInput" min="0" max="100" step="0.01" placeholder="Ex.: 10.00" class="custom-input" aria-label="Percentual de desconto promocional" disabled>
+            <input type="number" id="promoDiscountInput" min="0" max="100" step="0.01" placeholder="Ex.: 10.00" class="custom-input discount-input" aria-label="Percentual de desconto promocional" disabled>
             <i class="fas fa-star"></i>
           </div>
           <div id="promoDetails" class="promo-details">
@@ -519,7 +551,7 @@
       return gk_fileData[filename] || "";
     }
 
-    const exams = [
+const exams = [
   { name: "Abertura Coronária e Encaminhamento para Endodontia", price: 60.00 },
   { name: "Acetilcolinesterase Plasmática", price: 20.00 },
   { name: "Ácido 2 Etoxiacético", price: 549.00 },
@@ -1000,7 +1032,7 @@
   { name: "Waller Rose", price: 22.00 },
   { name: "Zika Virus-Sorologia Total - IgG", price: 254.00 },
   { name: "Zika Virus-Sorologia Total - IgM", price: 281.00 }
-    ];
+];
 
     let selectedExamsOrder = [];
 
@@ -1015,7 +1047,7 @@
         selectedExamTable.innerHTML += `
           <tr>
             <td>${exam.name}</td>
-            <td>R$ ${exam.price.toFixed(2)}</td>
+            <td>R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           </tr>
         `;
       });
@@ -1035,7 +1067,7 @@
           const isChecked = selectedExamsOrder.some(selected => selected.name === exam.name);
           div.innerHTML = `
             <input type="checkbox" id="exam-${exam.name}" value="${exam.name}" ${isChecked ? 'checked' : ''}>
-            <label for="exam-${exam.name}">${exam.name} <span>(R$ ${exam.price.toFixed(2)})</span></label>
+            <label for="exam-${exam.name}">${exam.name} <span>(R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span></label>
           `;
           examListContainer.appendChild(div);
           const checkbox = div.querySelector("input");
@@ -1090,12 +1122,12 @@
       const intermediateTotal = Math.max(total - discountValue, 0);
       const promoDiscountValue = intermediateTotal * (promoDiscountPercent / 100);
       const finalPrice = Math.max(intermediateTotal - promoDiscountValue, 0);
-      document.getElementById("totalPrice").textContent = total.toFixed(2);
+      document.getElementById("totalPrice").textContent = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       document.getElementById("discountPercent").textContent = discountPercent.toFixed(2);
-      document.getElementById("discountValue").textContent = discountValue.toFixed(2);
+      document.getElementById("discountValue").textContent = discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       document.getElementById("promoDiscountPercent").textContent = promoDiscountPercent.toFixed(2);
-      document.getElementById("promoDiscountValue").textContent = promoDiscountValue.toFixed(2);
-      document.getElementById("finalPrice").textContent = finalPrice.toFixed(2);
+      document.getElementById("promoDiscountValue").textContent = promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById("finalPrice").textContent = finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function applyDiscount() {
@@ -1121,137 +1153,254 @@
       }
     }
 
-    function printSummary() {
-      if (selectedExamsOrder.length === 0) {
-        alert("Selecione pelo menos um exame antes de imprimir.");
-        return;
-      }
-      if (!validatePhone() && document.getElementById("telefoneInput").value !== "") {
-        alert("Corrija o número de telefone antes de imprimir.");
-        return;
-      }
-      const total = parseFloat(document.getElementById("totalPrice").textContent);
-      const discountPercent = parseFloat(document.getElementById("discountPercent").textContent);
-      const discountValue = parseFloat(document.getElementById("discountValue").textContent);
-      const promoDiscountPercent = parseFloat(document.getElementById("promoDiscountPercent").textContent);
-      const promoDiscountValue = parseFloat(document.getElementById("promoDiscountValue").textContent);
-      const finalPrice = parseFloat(document.getElementById("finalPrice").textContent);
-      const responsible = document.getElementById("responsibleInput").value || "Não informado";
-      const solicitante = document.getElementById("solicitanteInput").value || "Não informado";
-      const telefone = document.getElementById("telefoneInput").value || "Não informado";
-      const promoType = document.getElementById("promoType").value || "Não informado";
-      const promoValidity = document.getElementById("promoValidity").value || "Não informado";
-      const isIndustryDiscountApplied = document.getElementById("enableIndustryDiscount").checked && discountPercent > 0;
-      const isPromoDiscountApplied = document.getElementById("enablePromoDiscount").checked && promoDiscountPercent > 0;
-      const currentYear = new Date().getFullYear();
-      let printContent = `
-        <html>
-        <head>
-          <title>Resumo de Exames</title>
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-          <style>
-            @media print { .no-print { display: none; } @page { margin: 2cm; } }
-            body { font-family: 'Inter', sans-serif; color: #111827; background: white; margin: 0; padding: 2rem; }
-            .print-container { max-width: 800px; margin: 0 auto; padding: 1.5rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background: #ffffff; }
-            .print-header { margin-bottom: 2rem; border-bottom: 2px solid #2563eb; padding-bottom: 1rem; }
-            .print-header .header-container { display: flex; align-items: center; justify-content: space-between; }
-            .print-header .logo-container img { max-width: 120px; height: auto; }
-            .print-header .title-container { flex: 1; text-align: center; }
-            .print-header h1 { font-size: 1.75rem; color: #111827; margin: 0; }
-            .print-header p { color: #111827; font-size: 0.875rem; margin: 0.5rem 0 0; }
-            .print-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-            .print-table th { background: #2563eb; color: white; padding: 1rem; font-weight: 600; text-align: left; }
-            .print-table td { padding: 1rem; border-bottom: 1px solid #e5e7eb; color: #111827; }
-            .print-table tr:nth-child(even) { background: #f9fafb; }
-            .print-table th:first-child, .print-table td:first-child { border-left: 1px solid #e5e7eb; }
-            .print-table th:last-child, .print-table td:last-child { border-right: 1px solid #e5e7eb; }
-            .print-table th:first-child { border-top-left-radius: 0.375rem; }
-            .print-table th:last-child { border-top-right-radius: 0.375rem; }
-            .print-table tr:last-child td { border-bottom: none; }
-            .print-summary { background: #f0f7ff; padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem; }
-            .print-summary p { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; margin: 0.5rem 0; }
-            .print-summary .final-price { font-size: 1.25rem; font-weight: 600; color: #2563eb; }
-            .print-warning { background: #fef2f2; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border: 1px solid #ef4444; color: #111827; font-size: 0.875rem; }
-            .print-warning i { margin-right: 0.5rem; color: #ef4444; }
-            .print-footer { text-align: center; color: #111827; font-size: 0.875rem; margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1rem; }
-            .btn-primary { padding: 0.75rem 1.5rem; border-radius: 0.5rem; background: #2563eb; color: white; font-weight: 500; cursor: pointer; border: none; }
-          </style>
-        </head>
-        <body>
-          <div class="print-container">
-            <div class="print-header">
-              <div class="header-container">
-                <div class="logo-container">
-                  <img src="img/sesi.jpg" alt="SESI Logo">
-                </div>
-                <div class="title-container">
-                  <h1>Resumo de Exames Laboratoriais</h1>
-                </div>
-                <div class="logo-container">
-                  <img src="img/melhoria.jpg" alt="Melhoria Logo">
-                </div>
-              </div>
-              <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-              <p>Responsável: ${responsible}</p>
-              <p>Solicitante: ${solicitante}</p>
-              <p>Telefone: ${telefone}</p>
-            </div>
-            <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">Exames Selecionados</h2>
-            <table class="print-table">
-              <thead>
-                <tr>
-                  <th>Exame</th>
-                  <th>Preço (R$)</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${selectedExamsOrder.length === 0 ? `<tr><td colspan="2" style="text-align: center;">Nenhum exame selecionado</td></tr>` : selectedExamsOrder.map(exam => `
-                  <tr>
-                    <td>${exam.name}</td>
-                    <td>R$ ${exam.price.toFixed(2)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-            <div class="print-summary">
-              <p><i class="fas fa-money-bill-wave"></i> Valor Total: R$ <span>${total.toFixed(2)}</span></p>
-              ${isIndustryDiscountApplied ? `<p><i class="fas fa-percentage"></i> Desconto Indústria: R$ <span>${discountValue.toFixed(2)}</span> (<span>${discountPercent.toFixed(2)}</span>%)</p>` : ''}
-              ${isPromoDiscountApplied ? `
-                <p><i class="fas fa-star"></i> Desconto Promocional: R$ <span>${promoDiscountValue.toFixed(2)}</span> (<span>${promoDiscountPercent.toFixed(2)}</span>%)</p>
-                ${promoType !== "Não informado" ? `
-                  <p><i class="fas fa-tag"></i> Tipo de Promoção: <span>${promoType}</span></p>
-                  <p><i class="fas fa-calendar-alt"></i> Vigência: <span>${promoValidity}</span></p>
-                ` : ''}
-              ` : ''}
-              <p class="final-price"><i class="fas fa-wallet"></i> Total do Pagamento: R$ <span>${finalPrice.toFixed(2)}</span></p>
-            </div>
-            <div class="print-warning">
-              <i class="fas fa-exclamation-triangle"></i>
-              <strong>AVISO IMPORTANTE</strong><br>
-              Este orçamento é válido até o final do ano vigente (${currentYear}) e está sujeito a alterações sem aviso prévio. Os valores aqui apresentados podem sofrer variações conforme períodos promocionais ou campanhas especiais.
-            </div>
-            <div class="print-footer">
-              <p>Endereço: <a href="https://www.google.com/maps/place/Rua+Frei+Cassimiro,+88,+Santo+Amaro,+Recife,+PE,+50100-260" target="_blank">Rua Frei Cassimiro, 88 - Santo Amaro, Recife - PE, 50100-260</a></p>
-              <p>Data: ${new Date().toLocaleString('pt-BR')}</p>
-            </div>
-            <button id="printButtonWindow" class="btn-primary no-print"><i class="fas fa-print mr-2"></i> Imprimir</button>
-          </div>
-        </body>
-        </html>
-      `;
-      const printWindow = window.open('', '_blank');
-      if (printWindow && printWindow.document) {
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-        printWindow.document.getElementById('printButtonWindow').addEventListener('click', () => printWindow.print());
-      } else {
-        alert('Não foi possível abrir a janela de impressão. Verifique os pop-ups.');
-      }
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, match => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[match]);
     }
 
+function printSummary() {
+  if (selectedExamsOrder.length === 0) {
+    alert("Selecione pelo menos um exame antes de imprimir.");
+    return;
+  }
+  if (!validatePhone() && document.getElementById("telefoneInput").value !== "") {
+    alert("Corrija o número de telefone antes de imprimir.");
+    return;
+  }
+  const total = parseFloat(document.getElementById("totalPrice").textContent.replace(',', '.'));
+  const discountPercent = parseFloat(document.getElementById("discountPercent").textContent);
+  const discountValue = parseFloat(document.getElementById("discountValue").textContent.replace(',', '.'));
+  const promoDiscountPercent = parseFloat(document.getElementById("promoDiscountPercent").textContent);
+  const promoDiscountValue = parseFloat(document.getElementById("promoDiscountValue").textContent.replace(',', '.'));
+  const finalPrice = parseFloat(document.getElementById("finalPrice").textContent.replace(',', '.'));
+  const responsible = escapeHTML(document.getElementById("responsibleInput").value || "Não informado");
+  const solicitante = escapeHTML(document.getElementById("solicitanteInput").value || "Não informado");
+  const telefone = escapeHTML(document.getElementById("telefoneInput").value || "Não informado");
+  const promoType = escapeHTML(document.getElementById("promoType").value || "Não informado");
+  const promoValidity = escapeHTML(document.getElementById("promoValidity").value || "Não informado");
+  const isIndustryDiscountApplied = document.getElementById("enableIndustryDiscount").checked && discountPercent > 0;
+  const isPromoDiscountApplied = document.getElementById("enablePromoDiscount").checked && promoDiscountPercent > 0;
+  const currentYear = new Date().getFullYear();
+  let printContent = `
+    <html>
+    <head>
+      <title>Resumo de Exames</title>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+      <style>
+        @media print { 
+          .no-print { display: none; } 
+          @page { margin: 2cm; } 
+        }
+        body { 
+          font-family: 'Inter', sans-serif; 
+          color: #111827; 
+          background: white; 
+          margin: 0; 
+          padding: 2rem; 
+        }
+        .print-container { 
+          max-width: 800px; 
+          margin: 0 auto; 
+          padding: 1.5rem; 
+          border: 1px solid #e5e7eb; 
+          border-radius: 0.75rem; 
+          background: #ffffff; 
+        }
+        .print-header { 
+          margin-bottom: 2rem; 
+          border-bottom: 2px solid #2563eb; 
+          padding-bottom: 1rem; 
+        }
+        .print-header .header-container { 
+          display: flex; 
+          align-items: center; 
+          justify-content: space-between; 
+        }
+        .print-header .logo-container img { 
+          max-width: 120px; 
+          height: auto; 
+        }
+        .print-header .title-container { 
+          flex: 1; 
+          text-align: center; 
+        }
+        .print-header h1 { 
+          font-size: 1.75rem; 
+          color: #111827; 
+          margin: 0; 
+        }
+        .print-header p { 
+          color: #111827; 
+          font-size: 0.875rem; 
+          margin: 0.5rem 0 0; 
+        }
+        .print-exams-section { 
+          margin-bottom: 2rem; 
+        }
+        .print-exams-section h2 { 
+          font-size: 1.25rem; 
+          margin-bottom: 1rem; 
+          text-align: center; 
+          color: #2563eb; 
+        }
+        .print-table { 
+          width: 100%; 
+          border-collapse: collapse; 
+        }
+        .print-table th { 
+          background-color: #2563eb; 
+          color: white; 
+          padding: 0.75rem; 
+          text-align: left; 
+          font-weight: 600; 
+          font-size: 0.875rem; 
+        }
+        .print-table td { 
+          padding: 0.75rem; 
+          text-align: left; 
+          border-bottom: 1px solid #e5e7eb; 
+          font-size: 0.875rem; 
+        }
+        .print-table tr:hover { 
+          background-color: #f3f4f6; 
+        }
+        .print-summary { 
+          background: #f0f7ff; 
+          padding: 1.5rem; 
+          border-radius: 0.75rem; 
+          margin-bottom: 1.5rem; 
+        }
+        .print-summary p { 
+          display: flex; 
+          align-items: center; 
+          gap: 0.5rem; 
+          font-size: 1rem; 
+          margin: 0.5rem 0; 
+        }
+        .print-summary .final-price { 
+          font-size: 1.25rem; 
+          font-weight: 600; 
+          color: #2563eb; 
+        }
+        .print-warning { 
+          background: #fef2f2; 
+          padding: 1rem; 
+          border-radius: 0.5rem; 
+          margin-bottom: 1.5rem; 
+          border: 1px solid #ef4444; 
+          color: #111827; 
+          font-size: 0.875rem; 
+        }
+        .print-warning i { 
+          margin-right: 0.5rem; 
+          color: #ef4444; 
+        }
+        .print-footer { 
+          text-align: center; 
+          color: #111827; 
+          font-size: 0.875rem; 
+          margin-top: 2rem; 
+          border-top: 1px solid #e5e7eb; 
+          padding-top: 1rem; 
+        }
+        .btn-primary { 
+          padding: 0.75rem 1.5rem; 
+          border-radius: 0.5rem; 
+          background: #2563eb; 
+          color: white; 
+          font-weight: 500; 
+          cursor: pointer; 
+          border: none; 
+        }
+      </style>
+    </head>
+    <body>
+      <div class="print-container">
+        <div class="print-header">
+          <div class="header-container">
+            <div class="logo-container">
+              <img src="img/sesi.jpg" alt="SESI Logo">
+            </div>
+            <div class="title-container">
+              <h1>Resumo de Exames Laboratoriais</h1>
+            </div>
+            <div class="logo-container">
+              <img src="img/melhoria.jpg" alt="Melhoria Logo">
+            </div>
+          </div>
+          <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+          <p>Responsável: ${responsible}</p>
+          <p>Solicitante: ${solicitante}</p>
+          <p>Telefone: ${telefone}</p>
+        </div>
+        <div class="print-exams-section">
+          <h2>Exames Selecionados</h2>
+          <table class="print-table">
+            <thead>
+              <tr>
+                <th>Exame</th>
+                <th>R$</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${selectedExamsOrder.length === 0 ? `
+                <tr>
+                  <td colspan="2" style="text-align: center; color: #6b7280;">Nenhum exame selecionado</td>
+                </tr>
+              ` : selectedExamsOrder.map(exam => `
+                <tr>
+                  <td>${exam.name}</td>
+                  <td>R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="print-summary">
+          <p><i class="fas fa-money-bill-wave"></i> Valor Total: R$ <span>${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
+          ${isIndustryDiscountApplied ? `<p><i class="fas fa-percentage"></i> Desconto Indústria: R$ <span>${discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (<span>${discountPercent.toFixed(2)}</span>%)</p>` : ''}
+          ${isPromoDiscountApplied ? `
+            <p><i class="fas fa-star"></i> Desconto Promocional: R$ <span>${promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (<span>${promoDiscountPercent.toFixed(2)}</span>%)</p>
+            ${promoType !== "Não informado" ? `
+              <p><i class="fas fa-tag"></i> Tipo de Promoção: <span>${promoType}</span></p>
+              <p><i class="fas fa-calendar-alt"></i> Vigência: <span>${promoValidity}</span></p>
+            ` : ''}
+          ` : ''}
+          <p class="final-price"><i class="fas fa-wallet"></i> Total do Pagamento: R$ <span>${finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
+        </div>
+        <div class="print-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>AVISO IMPORTANTE</strong><br>
+          Este orçamento é válido até o final do ano vigente (${currentYear}) e está sujeito a alterações sem aviso prévio. Os valores aqui apresentados podem sofrer variações conforme períodos promocionais ou campanhas especiais.
+        </div>
+        <div class="print-footer">
+          <p>Endereço: <a href="https://www.google.com/maps/place/Rua+Frei+Cassimiro,+88,+Santo+Amaro,+Recife,+PE,+50100-260" target="_blank">Rua Frei Cassimiro, 88 - Santo Amaro, Recife - PE, 50100-260</a></p>
+          <p>Data: ${new Date().toLocaleString('pt-BR')}</p>
+        </div>
+        <button id="printButtonWindow" class="btn-primary no-print"><i class="fas fa-print mr-2"></i> Imprimir</button>
+      </div>
+    </body>
+    </html>
+  `;
+  const printWindow = window.open('', '_blank');
+  if (printWindow && printWindow.document) {
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.document.getElementById('printButtonWindow').addEventListener('click', () => printWindow.print());
+  } else {
+    alert('Não foi possível abrir a janela de impressão. Verifique os pop-ups.');
+  }
+}
+
+    let debounceTimeout;
     document.getElementById("examSearch").addEventListener("input", (e) => {
-      clearTimeout(window.debounceTimeout);
-      window.debounceTimeout = setTimeout(() => renderExamCheckboxes(e.target.value.trim()), 150);
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => renderExamCheckboxes(e.target.value.trim()), 150);
     });
 
     document.getElementById("discountToggle").addEventListener("click", () => {
