@@ -1281,15 +1281,12 @@ function printSummary() {
     alert("Corrija o número de telefone antes de imprimir.");
     return;
   }
+  // Removida a validação obrigatória de discountInput e promoDiscountInput
   if (document.getElementById("enablePromoDiscount").checked && !validatePromoDates()) {
     alert("Corrija as datas da promoção antes de imprimir.");
     return;
   }
-  if (!validateDiscountInput("discountInput", "discountInputError") || !validateDiscountInput("promoDiscountInput", "promoDiscountInputError")) {
-    alert("Corrija os valores de desconto antes de imprimir.");
-    return;
-  }
-  
+
   const total = parseFloat(document.getElementById("totalPrice").textContent.replace(',', '.'));
   const discountPercent = parseFloat(document.getElementById("discountPercent").textContent);
   const discountValue = parseFloat(document.getElementById("discountValue").textContent.replace(',', '.'));
@@ -1306,7 +1303,7 @@ function printSummary() {
   const isIndustryDiscountApplied = document.getElementById("enableIndustryDiscount").checked && discountPercent > 0;
   const isPromoDiscountApplied = document.getElementById("enablePromoDiscount").checked && promoDiscountPercent > 0;
   const currentYear = new Date().getFullYear();
-  
+
   let printContent = `
     <html>
     <head>
@@ -1403,7 +1400,7 @@ function printSummary() {
     </body>
     </html>
   `;
-  
+
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
     alert('Não foi possível abrir a janela de impressão. Verifique as configurações de pop-ups do seu navegador.');
