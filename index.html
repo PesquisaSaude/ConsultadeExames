@@ -227,7 +227,7 @@
     .customQuitTable tr:hover {
       background-color: #f3f4f6;
     }
-    .btn-primary, .btn-accent, .btn-danger, .btn-promo {
+    .btn-primary, .btn-accent, .btn-danger, .btn-promo, .btn-update {
       padding: 0.75rem 1.5rem;
       border-radius: 0.5rem;
       color: white;
@@ -265,6 +265,13 @@
     }
     .btn-promo:hover {
       background: linear-gradient(to right, #6d28d9, #7c3aed);
+      transform: translateY(-2px);
+    }
+    .btn-update {
+      background: linear-gradient(to right, #f59e0b, #fbbf24);
+    }
+    .btn-update:hover {
+      background: linear-gradient(to right, #d97706, #f59e0b);
       transform: translateY(-2px);
     }
     .summary-card {
@@ -316,6 +323,20 @@
       justify-content: center;
       margin-top: 1.5rem;
     }
+    .print-controls {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      margin-top: 0.0rem;
+    }
+    .print-controls .search-container {
+      max-width: 240px;
+      flex: 0 0 auto;
+    }
+    .print-controls .custom-select {
+      padding: 0.75rem;
+      font-size: 1rem;
+    }
     .discount-container {
       margin: 1rem 0;
     }
@@ -343,6 +364,109 @@
     }
     .space {
       height: 1rem;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 2rem;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: var(--card-shadow);
+      position: relative;
+    }
+    .modal-content h2 {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .modal-content .close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+    .modal-content .logo-container {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .modal-content .logo-container img {
+      max-width: 120px;
+    }
+    .modal-content .form-group {
+      margin-bottom: 1rem;
+    }
+    .modal-content .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    .modal-content .form-group input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--input-border);
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    .modal-content .error-message {
+      display: block;
+      text-align: center;
+    }
+    .price-management {
+      display: none;
+      margin-top: 2rem;
+    }
+    .price-management.active {
+      display: block;
+    }
+    .price-management .form-group {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .price-management .form-group input {
+      flex: 1;
+    }
+    .price-management .exam-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid var(--input-border);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .price-management .exam-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .price-management .exam-item:last-child {
+      border-bottom: none;
+    }
+    .price-management .exam-item button {
+      background: none;
+      border: none;
+      color: var(--error-red);
+      cursor: pointer;
+      font-size: 1rem;
     }
     @media (max-width: 640px) {
       .main-container {
@@ -373,12 +497,19 @@
         max-width: 100%;
         margin-bottom: 0.5rem;
       }
-      .btn-primary, .btn-accent, .btn-danger, .btn-promo {
+      .btn-primary, .btn-accent, .btn-danger, .btn-promo, .btn-update {
         width: 100%;
         justify-content: center;
       }
       .button-container {
         flex-direction: column;
+      }
+      .print-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .print-controls .search-container {
+        max-width: 100%;
       }
       .promo-details.active {
         flex-direction: column;
@@ -390,9 +521,16 @@
         width: 100%;
         min-width: unset;
       }
+      .modal-content {
+        margin: 1rem;
+        padding: 1.5rem;
+      }
+      .price-management .form-group {
+        flex-direction: column;
+      }
     }
     @media print {
-      .btn-primary, .btn-accent, .btn-danger, .btn-promo {
+      .btn-primary, .btn-accent, .btn-danger, .btn-promo, .btn-update {
         display: none !important;
       }
       .no-print {
@@ -472,13 +610,25 @@
             <label for="telefoneInput">Telefone</label>
             <input type="tel" id="telefoneInput" class="custom-input" placeholder="Contato" aria-label="Digite o número de telefone (10 ou 11 dígitos)" pattern="^\d{10,11}$">
             <i class="fas fa-phone"></i>
-            <div id="phoneError" class="error-message">Digite 10 ou 11 dígitos numéricos</div>
+            <div id="phoneError" class="error-message">Digite os números</div>
           </div>
         </div>
       </div>
-      <button id="printButton" class="btn-primary mt-6 w-full sm:w-auto" aria-label="Imprimir resumo">
-        <i class="fas fa-print mr-2"></i> Imprimir Resumo
-      </button>
+      <div class="print-controls">
+        <button id="printButton" class="btn-primary w-full sm:w-auto" aria-label="Imprimir resumo">
+          <i class="fas fa-print mr-2"></i> Imprimir Resumo
+        </button>
+        <div class="search-container">
+          <label for="printType">Tipo de Impressão</label>
+          <select id="printType" class="custom-select" aria-label="Selecione o tipo de impressão">
+            <option value="standard">Impressora Padrão</option>
+            <option value="thermal">Impressora Térmica</option>
+          </select>
+        </div>
+        <button id="updateTableButton" class="btn-update w-full sm:w-auto" aria-label="Atualizar tabela">
+          <i class="fas fa-lock mr-2"></i> Atualizar Tabela
+        </button>
+      </div>
     </div>
     <div class="card">
       <button id="discountToggle" class="btn-primary w-full sm:w-auto" aria-label="Adicionar desconto">
@@ -492,7 +642,7 @@
           <div class="search-container mx-auto">
             <input type="number" id="discountInput" min="0" max="100" step="0.01" placeholder="Ex.: 10,00" class="custom-input discount-input" aria-label="Desconto percentual da indústria" disabled>
             <i class="fas fa-percent"></i>
-            <div id="discountInputError" class="error-message">Digite um valor entre 0 e 100</div>
+            <div id="discountInputError" class="error-message">Digite um valor em %</div>
           </div>
         </div>
         <div class="discount-container">
@@ -500,15 +650,15 @@
             <input type="checkbox" id="enablePromoDiscount" aria-label="Habilitar desconto promocional"> Desconto Promocional
           </label>
           <div class="search-container mx-auto">
-            <input type="number" id="promoDiscountInput" min="0" max="100" step="0.01" placeholder="Ex.: 10,00" class="custom-input discount-input" aria-label="Desconto percentual da promoção" disabled>
+            <input type="number" id="promoDiscountInput" min="0" max="100" step="0.01" placeholder="Ex.: 0.00" class="custom-input discount-input" aria-label="Desconto percentual da promoção" disabled>
             <i class="fas fa-star"></i>
-            <div id="promoDiscountInputError" class="error-message">Digite um valor entre 0 e 100</div>
+            <div id="promoDiscountInputError" class="error-message">Digite um valor em %</div>
           </div>
           <div id="promoDetails" class="promo-details">
             <div class="search-container">
               <label for="promoType">Seleção de promoção</label>
               <select id="promoType" class="custom-select" aria-label="Tipo de promoção" disabled>
-                <option value="" selected>Seleção de promoção</option>
+                <option value="" disabled>Seleção de promoção</option>
                 <option value="BlackFriday">Black Friday</option>
                 <option value="Semana do Consumidor">Semana do Consumidor</option>
                 <option value="Outros">Outros</option>
@@ -531,22 +681,54 @@
               <input type="text" id="otherPromoInput" class="custom-input" placeholder="Promoção" aria-label="Digite o tipo de promoção" disabled>
               <i class="fas fa-tag"></i>
             </div>
-     <div class="form-group">
-  <label for="printType">Tipo de Impressão:</label>
-  <select id="printType" class="form-control">
-    <option value="standard">Impressão Padrão (A4)</option>
-    <option value="thermal">Impressão Térmica (80mm)</option>
-  </select>
-    </div>
           </div>
         </div>
         <div class="button-container">
           <button id="applyDiscount" class="btn-accent" aria-label="Aplicar desconto Indústria">
-            <i class="fas fa-check mr-2"></i>  Aplicar Desconto
+            <i class="fas fa-check mr-2"></i> Aplicar Desconto
           </button>
           <button id="applyPromoDiscount" class="btn-promo" aria-label="Aplicar desconto promocional">
-            <i class="fas fa-star mr-2"></i>  Aplicar Promoção
+            <i class="fas fa-star mr-2"></i> Aplicar Promoção
           </button>
+        </div>
+      </div>
+    </div>
+    <div id="loginModal" class="modal">
+      <div class="modal-content">
+        <span class="close">×</span>
+        <div class="logo-container">
+          <img src="img/sesi.jpg" alt="Logo do SESI" aria-label="Logotipo do SESI">
+        </div>
+        <h2>Autenticação</h2>
+        <div class="form-group">
+          <label for="username">Usuário</label>
+          <input type="text" id="username" placeholder="Digite o usuário">
+        </div>
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input type="password" id="password" placeholder="Digite a senha">
+        </div>
+        <div id="loginError" class="error-message">Usuário ou senha incorretos</div>
+        <div class="button-container">
+          <button id="loginButton" class="btn-primary">Entrar</button>
+        </div>
+        <div id="priceManagement" class="price-management">
+          <h2>Gerenciamento de Preços</h2>
+          <div class="form-group">
+            <input type="text" id="newExamName" placeholder="Nome do exame">
+            <input type="number" id="newExamPrice" placeholder="Preço (R$)" step="0.01" min="0">
+            <button id="addExamButton" class="btn-accent"><i class="fas fa-plus"></i> Adicionar</button>
+          </div>
+          <div class="form-group">
+            <input type="file" id="excelUpload" accept=".xlsx,.xls">
+            <button id="uploadExcelButton" class="btn-primary"><i class="fas fa-upload"></i> Carregar Excel</button>
+          </div>
+          <div class="exam-list" id="examList">
+            <!-- Lista de exames será preenchida dinamicamente -->
+          </div>
+          <div class="button-container">
+            <button id="savePricesButton" class="btn-accent"><i class="fas fa-save"></i> Salvar e Baixar</button>
+          </div>
         </div>
       </div>
     </div>
@@ -577,10 +759,10 @@ function loadFileData(filename) {
       return csv;
     } catch (e) {
       console.error(e);
-      return "";
+      return '';
     }
   }
-  return gk_fileData[filename] || "";
+  return gk_fileData[filename] || '';
 }
 
 const exams = [
@@ -631,7 +813,7 @@ const exams = [
   { name: "Bacterioscopia a Fresco (Secreção Vaginal)", price: 24.00 },
   { name: "Bacterioscopia Gram (Outros Materiais)", price: 24.00 },
   { name: "Bacterioscopia Orofaringe", price: 24.00 },
-  { name: "Barra 3x3", price: 232.00 },
+  { name: "Barra 3x3", price: 232.00 }, // Note: Two entries with same name, using higher price
   { name: "Barra Transpalatina Fixa", price: 334.00 },
   { name: "Barra Transpalatina Removível", price: 210.00 },
   { name: "BHCG ou Beta HCG - Quantitativo", price: 41.00 },
@@ -776,7 +958,7 @@ const exams = [
   { name: "Dosagem Toxicológica - Cobre Sérico", price: 26.00 },
   { name: "Dosagem Toxicológica - Creatinina na Urina", price: 24.00 },
   { name: "Dosagem Toxicológica - Cromo Urinário", price: 88.00 },
-  { name: "Dosagem Toxicológica - Diclorometano", price: 191.00 },
+  { name: "Dosagem Toxicológica - Diclorometano", price: 191.00 }, // Note: Two entries, using higher price
   { name: "Dosagem Toxicológica - Etanol em Urina", price: 28.00 },
   { name: "Dosagem Toxicológica - Fenol por Cromatografia (Para Benzeno)", price: 38.00 },
   { name: "Dosagem Toxicológica - Fluoreto / Flúor", price: 43.00 },
@@ -1033,10 +1215,10 @@ const exams = [
   { name: "Ulectomia", price: 180.00 },
   { name: "Ulotomia", price: 120.00 },
   { name: "Ultrassonografia Abdômen Superior", price: 122.00 },
-  { name: "Ultrassonografia Abdômen Total", price: 202.00 },
-  { name: "Ultrassonografia Axila", price: 134.00 },
+  { name: "Ultrassonografia Abdômen Total", price: 202.00 }, // Note: Two entries, using higher price
+  { name: "Ultrassonografia Axila", price: 134.00 }, // Note: Two entries, using higher price
   { name: "Ultrassonografia Bolsa Escrotal", price: 166.00 },
-  { name: "Ultrassonografia Mamária", price: 141.00 },
+  { name: "Ultrassonografia Mamária", price: 141.00 }, // Note: Two entries, using higher price
   { name: "Ultrassonografia Obstétrica", price: 138.00 },
   { name: "Ultrassonografia Parede Abdominal", price: 160.00 },
   { name: "Ultrassonografia Partes Moles (Couro Cabeludo)", price: 127.00 },
@@ -1050,9 +1232,9 @@ const exams = [
   { name: "Ultrassonografia Próstata", price: 127.00 },
   { name: "Ultrassonografia Região Inguinal", price: 127.00 },
   { name: "Ultrassonografia Renal", price: 127.00 },
-  { name: "Ultrassonografia Tireóide", price: 126.00 },
+  { name: "Ultrassonografia Tireóide", price: 126.00 }, // Note: Two entries, using higher price
   { name: "Ultrassonografia Transretal", price: 126.00 },
-  { name: "Ultrassonografia Transvaginal", price: 126.00 },
+  { name: "Ultrassonografia Transvaginal", price: 126.00 }, // Note: Two entries, using higher price
   { name: "Ureaplasma Urealyticum", price: 119.00 },
   { name: "Uréia", price: 20.00 },
   { name: "Urocultura", price: 50.00 },
@@ -1066,23 +1248,23 @@ const exams = [
   { name: "Zika Virus-Sorologia Total - IgM", price: 281.00 }
 ];
 
-let selectedExamsOrder = [];
+let selectedExams = [];
 
 function normalizeString(str) {
   return str
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 }
 
 function renderSelectedExams() {
-  const selectedExamTable = document.getElementById("selectedExamTable");
-  selectedExamTable.innerHTML = "";
-  if (selectedExamsOrder.length === 0) {
+  const selectedExamTable = document.querySelector('#selectedExamTable');
+  selectedExamTable.innerHTML = '';
+  if (selectedExams.length === 0) {
     selectedExamTable.innerHTML = `<tr><td colspan="2" class="text-center text-[--text-light]">Nenhum exame selecionado</td></tr>`;
     return;
   }
-  selectedExamsOrder.forEach(exam => {
+  selectedExams.forEach(exam => {
     selectedExamTable.innerHTML += `
       <tr>
         <td>${escapeHTML(exam.name)}</td>
@@ -1093,45 +1275,88 @@ function renderSelectedExams() {
   updateTotal();
 }
 
-function renderExamCheckboxes(filterText = "") {
-  const examListContainer = document.getElementById("examListContainer");
-  examListContainer.innerHTML = "";
+function renderExamCheckboxes(filterText = '') {
+  const examListContainer = document.querySelector('#examListContainer');
+  examListContainer.innerHTML = '';
   const filteredExams = filterText
-    ? exams.filter(exam => normalizeString(exam.name).includes(normalizeString(filterText)))
-    : [];
+  ? exams.filter(exam => exam.name && typeof exam.name === 'string' && normalizeString(exam.name).includes(normalizeString(filterText)))
+  : [];
   if (filteredExams.length === 0 && filterText) {
     examListContainer.innerHTML = `<div class="no-results">Nenhum exame encontrado</div>`;
   } else {
     filteredExams.forEach(exam => {
-      const div = document.createElement("div");
-      div.className = "exam-checkbox";
-      const isChecked = selectedExamsOrder.some(selected => selected.name === exam.name);
+      const div = document.createElement('div');
+      div.className = 'exam-checkbox';
+      const isChecked = selectedExams.some(selected => selected.name === exam.name);
       div.innerHTML = `
         <input type="checkbox" id="exam-${escapeHTML(exam.name)}" value="${escapeHTML(exam.name)}" ${isChecked ? 'checked' : ''}>
         <label for="exam-${escapeHTML(exam.name)}">${escapeHTML(exam.name)} <span>(R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span></label>
       `;
       examListContainer.appendChild(div);
-      const checkbox = div.querySelector("input");
-      checkbox.addEventListener("change", () => {
+      const checkbox = div.querySelector('input');
+      checkbox.addEventListener('change', () => {
         if (checkbox.checked) {
-          if (!selectedExamsOrder.some(selected => selected.name === exam.name)) {
-            selectedExamsOrder.push({ name: exam.name, price: exam.price });
+          if (!selectedExams.some(selected => selected.name === exam.name)) {
+            selectedExams.push({ name: exam.name, price: exam.price });
           }
         } else {
-          selectedExamsOrder = selectedExamsOrder.filter(selected => selected.name !== exam.name);
+          selectedExams = selectedExams.filter(selected => selected.name !== exam.name);
         }
         renderSelectedExams();
       });
     });
   }
-  examListContainer.style.display = filterText ? "block" : "none";
+  examListContainer.style.display = filterText ? 'block' : 'none';
+}
+
+function renderPriceManagementList() {
+  const examList = document.querySelector('#examList');
+  examList.innerHTML = '';
+  exams.forEach((exam, index) => {
+    const div = document.createElement('div');
+    div.className = 'exam-item';
+    div.innerHTML = `
+      <span>${escapeHTML(exam.name)} - R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+      <div>
+        <button class="edit-price" data-index="${index}"><i class="fas fa-edit"></i></button>
+        <button class="delete-exam" data-index="${index}"><i class="fas fa-trash"></i></button>
+      </div>
+    `;
+    examList.appendChild(div);
+  });
+
+  document.querySelectorAll('.edit-price').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const index = e.target.closest('button').dataset.index;
+      const newPrice = prompt('Digite o novo preço:', exams[index].price);
+      if (newPrice && !isNaN(newPrice) && newPrice > 0) {
+        exams[index].price = parseFloat(newPrice);
+        renderPriceManagementList();
+        renderExamCheckboxes(document.querySelector('#examSearch').value);
+        renderSelectedExams();
+      }
+    });
+  });
+
+  document.querySelectorAll('.delete-exam').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const index = e.target.closest('button').dataset.index;
+      if (confirm(`Deseja excluir o exame "${exams[index].name}"?`)) {
+        exams.splice(index, 1);
+        renderPriceManagementList();
+        renderExamCheckboxes(document.querySelector('#examSearch').value);
+        selectedExams = selectedExams.filter(exam => exams.some(e => e.name === exam.name));
+        renderSelectedExams();
+      }
+    });
+  });
 }
 
 function formatDate(dateStr) {
-  if (!dateStr) return "Não informado";
+  if (!dateStr) return 'Não informado';
   const [year, month, day] = dateStr.split('-').map(Number);
   const date = new Date(year, month - 1, day);
-  if (isNaN(date.getTime())) return "Não informado";
+  if (isNaN(date.getTime())) return 'Não informado';
   return date.toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -1139,133 +1364,130 @@ function formatDate(dateStr) {
   });
 }
 
-
 function validatePromoDates() {
-  const startDateInput = document.getElementById("promoStartDate");
-  const endDateInput = document.getElementById("promoEndDate");
-  const startDateError = document.getElementById("promoStartDateError");
-  const endDateError = document.getElementById("promoEndDateError");
-  
-  startDateError.style.display = "none";
-  endDateError.style.display = "none";
-  
+  const startDateInput = document.querySelector('#promoStartDate');
+  const endDateInput = document.querySelector('#promoEndDate');
+  const startDateError = document.querySelector('#promoStartDateError');
+  const endDateError = document.querySelector('#promoEndDateError');
+
+  startDateError.style.display = 'none';
+  endDateError.style.display = 'none';
+
   if (!startDateInput.value) {
-    startDateInput.classList.add("error");
-    startDateError.style.display = "block";
+    startDateInput.classList.add('error');
+    startDateError.style.display = 'block';
     return false;
   }
-  
-  startDateInput.classList.remove("error");
-  
+  startDateInput.classList.remove('error');
+
   if (endDateInput.value && startDateInput.value) {
     const startDate = new Date(startDateInput.value);
     const endDate = new Date(endDateInput.value);
-    
     if (endDate < startDate) {
-      endDateInput.classList.add("error");
-      endDateError.style.display = "block";
+      endDateInput.classList.add('error');
+      endDateError.style.display = 'block';
       return false;
     }
-    endDateInput.classList.remove("error");
+    endDateInput.classList.remove('error');
   }
-  
   return true;
 }
 
 function validateDiscountInput(inputId, errorId) {
-  const input = document.getElementById(inputId);
-  const error = document.getElementById(errorId);
+  const input = document.querySelector(`#${inputId}`);
+  const error = document.querySelector(`#${errorId}`);
   const value = parseFloat(input.value);
-  if (isNaN(value) || value < 0 || value > 100) {
-    input.classList.add("error");
-    error.style.display = "block";
+  if (isNaN(value) || value < 0 || (inputId === 'discountInput' && value > 70) || (inputId === 'promoDiscountInput' && value > 25)) {
+    input.classList.add('error');
+    error.style.display = 'block';
     return false;
   } else {
-    input.classList.remove("error");
-    error.style.display = "none";
+    input.classList.remove('error');
+    error.style.display = 'none';
     return true;
   }
 }
 
 function clearSelections() {
-  selectedExamsOrder = [];
-  document.getElementById("examSearch").value = "";
-  document.getElementById("discountInput").value = "";
-  document.getElementById("promoDiscountInput").value = "";
-  document.getElementById("enableIndustryDiscount").checked = false;
-  document.getElementById("enablePromoDiscount").checked = false;
-  document.getElementById("promoType").value = "";
-  document.getElementById("promoStartDate").value = "";
-  document.getElementById("promoEndDate").value = "";
-  document.getElementById("otherPromoInput").value = "";
-  document.getElementById("discountInput").disabled = true;
-  document.getElementById("promoDiscountInput").disabled = true;
-  document.getElementById("promoType").disabled = true;
-  document.getElementById("promoStartDate").disabled = true;
-  document.getElementById("promoEndDate").disabled = true;
-  document.getElementById("otherPromoContainer").style.display = "none";
-  document.getElementById("promoDetails").classList.remove("active");
-  document.getElementById("solicitanteInput").value = "";
-  document.getElementById("telefoneInput").value = "";
-  document.getElementById("totalPrice").textContent = "0,00";
-  document.getElementById("discountPercent").textContent = "0";
-  document.getElementById("discountValue").textContent = "0,00";
-  document.getElementById("promoDiscountPercent").textContent = "0";
-  document.getElementById("promoDiscountValue").textContent = "0,00";
-  document.getElementById("finalPrice").textContent = "0,00";
-  document.getElementById("promoStartDateError").style.display = "none";
-  document.getElementById("promoEndDateError").style.display = "none";
-  document.getElementById("promoStartDate").classList.remove("error");
-  document.getElementById("promoEndDate").classList.remove("error");
-  document.getElementById("discountInputError").style.display = "none";
-  document.getElementById("promoDiscountInputError").style.display = "none";
-  document.getElementById("discountInput").classList.remove("error");
-  document.getElementById("promoDiscountInput").classList.remove("error");
+  selectedExams = [];
+  document.getElementById('examSearch').value = '';
+  document.querySelector('#discountInput').value = '';
+  document.querySelector('#promoDiscountInput').value = '';
+  document.querySelector('#enableIndustryDiscount').checked = false;
+  document.querySelector('#enablePromoDiscount').checked = false;
+  document.querySelector('#promoType').value = '';
+  document.getElementById('promoStartDate').value = '';
+  document.getElementById('promoEndDate').value = '';
+  document.querySelector('#otherPromoInput').value = '';
+  document.querySelector('#discountInput').disabled = true;
+  document.querySelector('#promoDiscountInput').disabled = true;
+  document.querySelector('#promoType').disabled = true;
+  document.getElementById('promoStartDate').disabled = true;
+  document.getElementById('promoEndDate').disabled = true;
+  document.getElementById('otherPromoContainer').style.display = 'none';
+  document.getElementById('promoDetails').classList.remove('active');
+  document.getElementById('solicitanteInput').value = '';
+  document.getElementById('telefoneInput').value = '';
+  document.querySelector('#printType').value = 'standard';
+  document.getElementById('totalPrice').textContent = '0,00';
+  document.getElementById('discountPercent').textContent = '0';
+  document.querySelector('#discountValue').textContent = '0,00';
+  document.getElementById('promoDiscountPercent').textContent = '0';
+  document.getElementById('promoDiscountValue').textContent = '0,00';
+  document.getElementById('finalPrice').textContent = '0,00';
+  document.getElementById('promoStartDateError').style.display = 'none';
+  document.getElementById('promoEndDateError').style.display = 'none';
+  document.getElementById('promoStartDate').classList.remove('error');
+  document.getElementById('promoEndDate').classList.remove('error');
+  document.getElementById('discountInputError').style.display = 'none';
+  document.getElementById('promoDiscountInputError').style.display = 'none';
+  document.getElementById('discountInput').classList.remove('error');
+  document.getElementById('promoDiscountInput').classList.remove('error');
   renderSelectedExams();
   renderExamCheckboxes();
 }
 
 function updateTotal() {
-  let total = selectedExamsOrder.reduce((sum, exam) => sum + exam.price, 0);
-  let discountPercent = document.getElementById("enableIndustryDiscount").checked ? (parseFloat(document.getElementById("discountInput").value) || 0) : 0;
-  let promoDiscountPercent = document.getElementById("enablePromoDiscount").checked ? (parseFloat(document.getElementById("promoDiscountInput").value) || 0) : 0;
-  discountPercent = Math.max(0, Math.min(100, discountPercent));
-  promoDiscountPercent = Math.max(0, Math.min(100, promoDiscountPercent));
+  let total = selectedExams.reduce((sum, exam) => sum + exam.price, 0);
+  let discountPercent = document.getElementById('enableIndustryDiscount').checked ? (parseFloat(document.getElementById('discountInput').value) || 0) : 0;
+  let promoDiscountPercent = document.getElementById('enablePromoDiscount').checked ? (parseFloat(document.getElementById('promoDiscountInput').value) || 0) : 0;
+  discountPercent = Math.max(0, Math.min(70, discountPercent));
+  promoDiscountPercent = Math.max(0, Math.min(25, promoDiscountPercent));
   const discountValue = total * (discountPercent / 100);
   const intermediateTotal = Math.max(total - discountValue, 0);
   const promoDiscountValue = intermediateTotal * (promoDiscountPercent / 100);
   const finalPrice = Math.max(intermediateTotal - promoDiscountValue, 0);
-  document.getElementById("totalPrice").textContent = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  document.getElementById("discountPercent").textContent = discountPercent.toFixed(2);
-  document.getElementById("discountValue").textContent = discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  document.getElementById("promoDiscountPercent").textContent = promoDiscountPercent.toFixed(2);
-  document.getElementById("promoDiscountValue").textContent = promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  document.getElementById("finalPrice").textContent = finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('totalPrice').textContent = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('discountPercent').textContent = discountPercent.toFixed(2);
+  document.getElementById('discountValue').textContent = discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('promoDiscountPercent').textContent = promoDiscountPercent.toFixed(2);
+  document.getElementById('promoDiscountValue').textContent = promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('finalPrice').textContent = finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function applyDiscount() {
-  if (validateDiscountInput("discountInput", "discountInputError")) {
+  if (validateDiscountInput('discountInput', 'discountInputError')) {
     updateTotal();
   }
 }
 
 function applyPromoDiscount() {
-  if (validateDiscountInput("promoDiscountInput", "promoDiscountInputError") && validatePromoDates()) {
+  if (validateDiscountInput('promoDiscountInput', 'promoDiscountInputError') && validatePromoDates()) {
     updateTotal();
   }
 }
 
 function validatePhone() {
-  const phoneInput = document.getElementById("telefoneInput");
-  const phoneError = document.getElementById("phoneError");
+  const phoneInput = document.getElementById('telefoneInput');
+  const phoneError = document.getElementById('phoneError');
   const phonePattern = /^\d{10,11}$/;
-  if (!phonePattern.test(phoneInput.value) && phoneInput.value !== "") {
-    phoneInput.classList.add("error");
-    phoneError.style.display = "block";
+  if (!phonePattern.test(phoneInput.value) && phoneInput.value !== '') {
+    phoneInput.classList.add('error');
+    phoneError.style.display = 'block';
     return false;
   } else {
-    phoneInput.classList.remove("error");
-    phoneError.style.display = "none";
+    phoneInput.classList.remove('error');
+    phoneError.style.display = 'none';
     return true;
   }
 }
@@ -1282,61 +1504,60 @@ function escapeHTML(str) {
 }
 
 function printSummary() {
-  if (selectedExamsOrder.length === 0) {
-    alert("Selecione pelo menos um exame antes de imprimir.");
+  if (selectedExams.length === 0) {
+    alert('Selecione pelo menos um exame antes de imprimir.');
     return;
   }
-  if (!validatePhone() && document.getElementById("telefoneInput").value !== "") {
-    alert("Corrija o número de telefone antes de imprimir.");
+  if (!validatePhone() && document.getElementById('telefoneInput').value !== '') {
+    alert('Corrija o número de telefone antes de imprimir.');
     return;
   }
-  if (document.getElementById("enablePromoDiscount").checked && !validatePromoDates()) {
-    alert("Corrija as datas da promoção antes de imprimir.");
+  if (document.getElementById('enablePromoDiscount').checked && !validatePromoDates()) {
+    alert('Corrija as datas da promoção antes de imprimir.');
     return;
   }
 
-  const total = parseFloat(document.getElementById("totalPrice").textContent.replace(',', '.'));
-  const discountPercent = parseFloat(document.getElementById("discountPercent").textContent);
-  const discountValue = parseFloat(document.getElementById("discountValue").textContent.replace(',', '.'));
-  const promoDiscountPercent = parseFloat(document.getElementById("promoDiscountPercent").textContent);
-  const promoDiscountValue = parseFloat(document.getElementById("promoDiscountValue").textContent.replace(',', '.'));
-  const finalPrice = parseFloat(document.getElementById("finalPrice").textContent.replace(',', '.'));
-  const responsible = escapeHTML(document.getElementById("responsibleInput").value || "Não informado");
-  const solicitante = escapeHTML(document.getElementById("solicitanteInput").value || "Não informado");
-  const telefone = escapeHTML(document.getElementById("telefoneInput").value || "Não informado");
-  const promoTypeValue = document.getElementById("promoType").value;
-  const promoType = promoTypeValue === "Outros" ? escapeHTML(document.getElementById("otherPromoInput").value || "Não informado") : escapeHTML(promoTypeValue || "Não informado");
-  const promoStartDateRaw = document.getElementById("promoStartDate").value;
-  const promoEndDateRaw = document.getElementById("promoEndDate").value;
+  const total = parseFloat(document.getElementById('totalPrice').textContent.replace(',', '.'));
+  const discountPercent = parseFloat(document.getElementById('discountPercent').textContent);
+  const discountValue = parseFloat(document.getElementById('discountValue').textContent.replace(',', '.'));
+  const promoDiscountPercent = parseFloat(document.getElementById('promoDiscountPercent').textContent);
+  const promoDiscountValue = parseFloat(document.getElementById('promoDiscountValue').textContent.replace(',', '.'));
+  const finalPrice = parseFloat(document.getElementById('finalPrice').textContent.replace(',', '.'));
+  const responsible = escapeHTML(document.getElementById('responsibleInput').value || 'Não informado');
+  const solicitante = escapeHTML(document.getElementById('solicitanteInput').value || 'Não informado');
+  const telefone = escapeHTML(document.getElementById('telefoneInput').value || 'Não informado');
+  const promoTypeValue = document.getElementById('promoType').value;
+  const promoType = promoTypeValue === 'Outros' ? escapeHTML(document.getElementById('otherPromoInput').value || 'Não informado') : escapeHTML(promoTypeValue || 'Não informado');
+  const promoStartDateRaw = document.getElementById('promoStartDate').value;
+  const promoEndDateRaw = document.getElementById('promoEndDate').value;
   const promoStartDate = formatDate(promoStartDateRaw);
   const promoEndDate = formatDate(promoEndDateRaw);
-  const isIndustryDiscountApplied = document.getElementById("enableIndustryDiscount").checked && discountPercent > 0;
-  const isPromoDiscountApplied = document.getElementById("enablePromoDiscount").checked && promoDiscountPercent > 0;
+  const isIndustryDiscountApplied = document.getElementById('enableIndustryDiscount').checked && discountPercent > 0;
+  const isPromoDiscountApplied = document.getElementById('enablePromoDiscount').checked && promoDiscountPercent > 0;
   const currentYear = new Date().getFullYear();
-  const isPromoValid = isPromoDiscountApplied && 
-                       promoStartDate !== "Não informado" && 
-                       promoEndDate !== "Não informado" && 
+  const isPromoValid = isPromoDiscountApplied &&
+                       promoStartDate !== 'Não informado' &&
+                       promoEndDate !== 'Não informado' &&
                        new Date(promoEndDateRaw) >= new Date(promoStartDateRaw);
-  const printType = document.getElementById("printType").value;
+  const printType = document.getElementById('printType').value;
 
   let printContent;
 
-  if (printType === "thermal") {
-    // Template para impressoras térmicas (80mm, texto simples)
+  if (printType === 'thermal') {
     printContent = `
       <html>
       <head>
         <title>Resumo de Exames</title>
         <style>
-          body { 
-            font-family: monospace; 
-            font-size: 10pt; 
-            margin: 0; 
-            padding: 5mm; 
-            width: 80mm; 
-            line-height: 1.2; 
-            color: #000; 
-            background: #fff; 
+          body {
+            font-family: monospace;
+            font-size: 12pt;
+            margin: 0;
+            padding: 5mm;
+            width: 80mm;
+            line-height: 1.2;
+            color: #000;
+            background: #fff;
           }
           .line { margin-bottom: 0.5em; }
           .divider { border-top: 1px dashed #000; margin: 0.5em 0; }
@@ -1353,9 +1574,9 @@ function printSummary() {
         <div class="line">Telefone: ${telefone}</div>
         <div class="divider"></div>
         <div class="center bold">Exames Selecionados</div>
-        ${selectedExamsOrder.length === 0 ? `
+        ${selectedExams.length === 0 ? `
           <div class="line center">Nenhum exame selecionado</div>
-        ` : selectedExamsOrder.map(exam => `
+        ` : selectedExams.map(exam => `
           <div class="line">${exam.name.substring(0, 40)}</div>
           <div class="line">R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
         `).join('')}
@@ -1389,7 +1610,6 @@ function printSummary() {
       </html>
     `;
   } else {
-    // Template para impressoras padrão (A4)
     printContent = `
       <html>
       <head>
@@ -1448,11 +1668,11 @@ function printSummary() {
                 </tr>
               </thead>
               <tbody>
-                ${selectedExamsOrder.length === 0 ? `
+                ${selectedExams.length === 0 ? `
                   <tr>
                     <td colspan="2" style="text-align: center; color: #6b7280;">Nenhum exame selecionado</td>
                   </tr>
-                ` : selectedExamsOrder.map(exam => `
+                ` : selectedExams.map(exam => `
                   <tr>
                     <td>${escapeHTML(exam.name)}</td>
                     <td>R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -1503,60 +1723,193 @@ function printSummary() {
   printWindow.document.getElementById('printButtonWindow')?.addEventListener('click', () => printWindow.print());
 }
 
+function handleLogin() {
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const loginError = document.getElementById('loginError');
+
+  if (username === 'SESI' && password === 'sistema@2025') {
+    loginError.style.display = 'none';
+    document.getElementById('priceManagement').classList.add('active');
+    document.querySelector('.modal-content .form-group').style.display = 'none';
+    document.querySelector('.modal-content .button-container').style.display = 'none';
+    document.querySelector('.modal-content h2').textContent = 'Gerenciamento de Preços';
+    renderPriceManagementList();
+  } else {
+    loginError.style.display = 'block';
+  }
+}
+
+function handleAddExam() {
+  const name = document.getElementById('newExamName').value.trim();
+  const price = parseFloat(document.getElementById('newExamPrice').value);
+  if (name && !isNaN(price) && price > 0) {
+    exams.push({ name, price });
+    document.getElementById('newExamName').value = '';
+    document.getElementById('newExamPrice').value = '';
+    renderPriceManagementList();
+    renderExamCheckboxes(document.querySelector('#examSearch').value);
+  } else {
+    alert('Por favor, insira um nome válido e um preço maior que zero.');
+  }
+}
+
+function handleExcelUpload(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
+       
+        // Assume first column is name, second is price
+        const newExams = jsonData
+          .slice(1) // Skip header
+          .filter(row => row[0] && !isNaN(parseFloat(row[1])))
+          .map(row => ({
+            name: String(row[0]).trim(),
+            price: parseFloat(row[1])
+          }))
+          .filter(exam => exam.name && exam.price > 0);
+
+        if (newExams.length > 0) {
+          exams = newExams;
+          renderPriceManagementList();
+          renderExamCheckboxes(document.querySelector('#examSearch').value);
+          selectedExams = selectedExams.filter(exam => exams.some(e => e.name === exam.name));
+          renderSelectedExams();
+          alert('Tabela de preços atualizada com sucesso!');
+        } else {
+          alert('Nenhum exame válido encontrado no arquivo Excel.');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Erro ao processar o arquivo Excel. Verifique o formato do arquivo.');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+function saveAndDownloadUpdatedCode() {
+  // Sort exams alphabetically by name to maintain consistency
+  exams.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Generate the updated exams array as a string
+  const examsArrayString = JSON.stringify(exams, null, 2)
+    .replace(/"([^"]+)":/g, '$1:') // Remove quotes around property names
+    .replace(/"/g, "'"); // Use single quotes for strings
+
+  // Get the current HTML content
+  let htmlContent = document.documentElement.outerHTML;
+
+  // Replace the exams array in the script
+  const examsRegex = /let exams = \[(.*?)\];/s;
+  const newExamsDeclaration = `let exams = ${examsArrayString};`;
+  htmlContent = htmlContent.replace(examsRegex, newExamsDeclaration);
+
+  // Create a Blob with the updated HTML
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+
+  // Create a download link
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'index.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  alert('Alterações salvas! O arquivo atualizado foi baixado. Substitua o arquivo original por este novo para manter as alterações.');
+}
 
 let debounceTimeout;
-document.getElementById("examSearch").addEventListener("input", (e) => {
-  console.log("Texto digitado:", e.target.value); // Log para depuração
+document.getElementById('examSearch').addEventListener('input', (e) => {
   clearTimeout(debounceTimeout);
   debounceTimeout = setTimeout(() => {
     const filteredExams = exams.filter(exam => normalizeString(exam.name).includes(normalizeString(e.target.value.trim())));
-    console.log("Exames filtrados:", filteredExams); // Log para depuração
     renderExamCheckboxes(e.target.value.trim());
   }, 100);
 });
 
-document.getElementById("discountToggle").addEventListener("click", () => {
-  document.getElementById("discountSection").classList.toggle("active");
+document.getElementById('discountToggle').addEventListener('click', () => {
+  document.getElementById('discountSection').classList.toggle('active');
 });
 
-document.getElementById("enableIndustryDiscount").addEventListener("change", (e) => {
-  document.getElementById("discountInput").disabled = !e.target.checked;
-  validateDiscountInput("discountInput", "discountInputError");
+document.getElementById('enableIndustryDiscount').addEventListener('change', (e) => {
+  document.getElementById('discountInput').disabled = !e.target.checked;
+  validateDiscountInput('discountInput', 'discountInputError');
   updateTotal();
 });
 
-document.getElementById("enablePromoDiscount").addEventListener("change", (e) => {
+document.getElementById('enablePromoDiscount').addEventListener('change', (e) => {
   const isChecked = e.target.checked;
-  document.getElementById("promoDiscountInput").disabled = !isChecked;
-  document.getElementById("promoType").disabled = !isChecked;
-  document.getElementById("promoStartDate").disabled = !isChecked;
-  document.getElementById("promoEndDate").disabled = !isChecked;
-  document.getElementById("otherPromoInput").disabled = !isChecked;
-  document.getElementById("promoDetails").classList.toggle("active", isChecked);
-  const promoType = document.getElementById("promoType").value;
-  document.getElementById("otherPromoContainer").style.display = (isChecked && promoType === "Outros") ? "block" : "none";
-  document.getElementById("promoStartDateError").style.display = "none";
-  document.getElementById("promoEndDateError").style.display = "none";
-  document.getElementById("promoStartDate").classList.remove("error");
-  document.getElementById("promoEndDate").classList.remove("error");
-  validateDiscountInput("promoDiscountInput", "promoDiscountInputError");
+  document.getElementById('promoDiscountInput').disabled = !isChecked;
+  document.getElementById('promoType').disabled = !isChecked;
+  document.getElementById('promoStartDate').disabled = !isChecked;
+  document.getElementById('promoEndDate').disabled = !isChecked;
+  document.getElementById('otherPromoInput').disabled = !isChecked;
+  document.getElementById('promoDetails').classList.toggle('active', isChecked);
+  const promoType = document.getElementById('promoType').value;
+  document.getElementById('otherPromoContainer').style.display = (isChecked && promoType === 'Outros') ? 'block' : 'none';
+  document.getElementById('promoStartDateError').style.display = 'none';
+  document.getElementById('promoEndDateError').style.display = 'none';
+  document.getElementById('promoStartDate').classList.remove('error');
+  document.getElementById('promoEndDate').classList.remove('error');
+  validateDiscountInput('promoDiscountInput', 'promoDiscountInputError');
   updateTotal();
 });
 
-document.getElementById("promoType").addEventListener("change", (e) => {
-  const isPromoEnabled = document.getElementById("enablePromoDiscount").checked;
-  document.getElementById("otherPromoContainer").style.display = (isPromoEnabled && e.target.value === "Outros") ? "block" : "none";
+document.getElementById('promoType').addEventListener('change', (e) => {
+  const isPromoEnabled = document.getElementById('enablePromoDiscount').checked;
+  document.getElementById('otherPromoContainer').style.display = (isPromoEnabled && e.target.value === 'Outros') ? 'block' : 'none';
 });
 
-document.getElementById("discountInput").addEventListener("input", () => validateDiscountInput("discountInput", "discountInputError"));
-document.getElementById("promoDiscountInput").addEventListener("input", () => validateDiscountInput("promoDiscountInput", "promoDiscountInputError"));
-document.getElementById("applyDiscount").addEventListener("click", applyDiscount);
-document.getElementById("applyPromoDiscount").addEventListener("click", applyPromoDiscount);
-document.getElementById("clearSelection").addEventListener("click", clearSelections);
-document.getElementById("printButton").addEventListener("click", printSummary);
-document.getElementById("telefoneInput").addEventListener("input", validatePhone);
-document.getElementById("promoStartDate").addEventListener("change", validatePromoDates);
-document.getElementById("promoEndDate").addEventListener("change", validatePromoDates);
+document.getElementById('discountInput').addEventListener('input', () => validateDiscountInput('discountInput', 'discountInputError'));
+document.getElementById('promoDiscountInput').addEventListener('input', () => validateDiscountInput('promoDiscountInput', 'promoDiscountInputError'));
+document.getElementById('applyDiscount').addEventListener('click', applyDiscount);
+document.getElementById('applyPromoDiscount').addEventListener('click', applyPromoDiscount);
+document.getElementById('clearSelection').addEventListener('click', clearSelections);
+document.getElementById('printButton').addEventListener('click', printSummary);
+document.getElementById('telefoneInput').addEventListener('input', validatePhone);
+document.getElementById('promoStartDate').addEventListener('change', validatePromoDates);
+document.getElementById('promoEndDate').addEventListener('change', validatePromoDates);
+
+document.getElementById('updateTableButton').addEventListener('click', () => {
+  document.getElementById('loginModal').classList.add('active');
+  document.getElementById('username').value = '';
+  document.getElementById('password').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('priceManagement').classList.remove('active');
+  document.querySelector('.modal-content .form-group').style.display = 'block';
+  document.querySelector('.modal-content .button-container').style.display = 'flex';
+  document.querySelector('.modal-content h2').textContent = 'Autenticação';
+});
+
+document.querySelector('.modal .close').addEventListener('click', () => {
+  document.getElementById('loginModal').classList.remove('active');
+});
+
+document.getElementById('loginButton').addEventListener('click', handleLogin);
+
+document.getElementById('addExamButton').addEventListener('click', handleAddExam);
+
+document.getElementById('uploadExcelButton').addEventListener('click', () => {
+  document.getElementById('excelUpload').click();
+});
+
+document.getElementById('excelUpload').addEventListener('change', handleExcelUpload);
+
+document.getElementById('savePricesButton').addEventListener('click', () => {
+  renderExamCheckboxes(document.querySelector('#examSearch').value);
+  renderSelectedExams();
+  saveAndDownloadUpdatedCode();
+});
 
 renderSelectedExams();
 renderExamCheckboxes();
