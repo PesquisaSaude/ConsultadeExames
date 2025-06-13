@@ -735,7 +735,7 @@
     </div>
   </div>
   <script type="text/javascript">
-    // Define initial exams data
+
     const initialExams = [
   { name: "Abertura Coronária e Encaminhamento para Endodontia", price: 60.00 },
   { name: "Acetilcolinesterase Plasmática", price: 20.00 },
@@ -1222,7 +1222,6 @@
     let db;
     let selectedExams = [];
 
-    // Initialize SQLite database
     async function initDatabase() {
       try {
         const sql = await initSqlJs({ locateFile: file => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm' });
@@ -1234,7 +1233,7 @@
             price REAL NOT NULL
           );
         `);
-        // Populate initial exams if table is empty
+
         const count = db.exec("SELECT COUNT(*) AS count FROM exams")[0].values[0][0];
         if (count === 0) {
           const stmt = db.prepare("INSERT INTO exams (name, price) VALUES (?, ?)");
@@ -1249,86 +1248,74 @@
       }
     }
 
-    // Retrieve all exams from database
-    function getExams(filterText = '') {
-      try {
-        let query = "SELECT name, price FROM exams";
-        let params = [];
-        if (filterText) {
-          query += " WHERE LOWER(name) LIKE LOWER(?)";
-          params.push(`%${filterText}%`);
-        }
-        query += " ORDER BY name";
-        const stmt = db.prepare(query);
-        stmt.bind(params);
-        const exams = [];
-        while (stmt.step()) {
-          const row = stmt.getAsObject();
-          exams.push({ name: row.name, price: parseFloat(row.price) });
-        }
-        stmt.free();
-        return exams;
-      } catch (error) {
-        console.error('Erro ao buscar exames:', error);
-        return [];
-      }
+function getExams(filterText = '') {
+  try {
+    let query = "SELECT name, price FROM exams";
+    let params = [];
+    let exams = [];
+
+    const stmt = db.prepare(query);
+    while (stmt.step()) {
+      const row = stmt.getAsObject();
+      exams.push({ name: row.name, price: parseFloat(row.price) });
+    }
+    stmt.free();
+
+    if (filterText) {
+      const normalizedFilter = normalizeString(filterText);
+      exams = exams.filter(exam => 
+        normalizeString(exam.name).includes(normalizedFilter)
+      );
     }
 
-    function normalizeString(str) {
-      return str
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
-    }
+    exams.sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'base' }));
+    return exams;
+  } catch (error) {
+    console.error('Erro ao buscar exames:', error);
+    return [];
+  }
+}
 
-    function renderSelectedExams() {
-      const selectedExamsTable = document.querySelector('#selectedExamTable');
-      selectedExamsTable.innerHTML = '';
-      if (selectedExams.length === 0) {
-        selectedExamsTable.innerHTML = `<tr><td colspan="2" class="text-center text-[var(--text-light)]">Nenhum exame selecionado</td></tr>`;
-        return;
-      }
-      selectedExams.forEach(exam => {
-        selectedExamsTable.innerHTML += `
-          <tr>
-            <td>${escapeHTML(exam.name)}</td>
-            <td>R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-          </tr>
-        `;
+function normalizeString(str) {
+  return str
+    .normalize('NFD') 
+    .replace(/[\u0300-\u036f]/g, '') 
+    .replace(/[-_]/g, '') 
+    .toLowerCase();
+}
+
+function renderExamCheckboxes(filterText = '') {
+  const examListContainer = document.querySelector('#examListContainer');
+  examListContainer.innerHTML = '';
+  const filteredExams = getExams(filterText);
+
+  if (filteredExams.length === 0 && filterText) {
+    examListContainer.innerHTML = `<div class="no-results">Nenhum exame encontrado</div>`;
+  } else {
+    filteredExams.forEach(exam => {
+      const div = document.createElement('div');
+      div.className = 'exam-checkbox';
+      const isChecked = selectedExams.some(selected => selected.name === exam.name);
+      div.innerHTML = `
+        <input type="checkbox" id="exam-${escapeHTML(exam.name)}" value="${escapeHTML(exam.name)}" ${isChecked ? 'checked' : ''}>
+        <label for="exam-${escapeHTML(exam.name)}">${escapeHTML(exam.name)} <span>(R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span></label>
+      `;
+      examListContainer.appendChild(div);
+
+      const checkbox = div.querySelector('input');
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          if (!selectedExams.some(selected => selected.name === exam.name)) {
+            selectedExams.push({ name: exam.name, price: exam.price });
+          }
+        } else {
+          selectedExams = selectedExams.filter(selected => selected.name !== exam.name);
+        }
+        renderSelectedExams();
       });
-      updateTotal();
-    }
-
-    function renderExamCheckboxes(filterText = '') {
-      const examListContainer = document.querySelector('#examListContainer');
-      examListContainer.innerHTML = '';
-      const filteredExams = getExams(filterText);
-      if (filteredExams.length === 0 && filterText) {
-        examListContainer.innerHTML = `<div class="no-results">Nenhum exame encontrado</div>`;
-      } else {
-        filteredExams.forEach(exam => {
-          const div = document.createElement('div');
-          div.className = 'exam-checkbox';
-          const isChecked = selectedExams.some(selected => selected.name === exam.name);
-          div.innerHTML = `
-            <input type="checkbox" id="exam-${escapeHTML(exam.name)}" value="${escapeHTML(exam.name)}" ${isChecked ? 'checked' : ''}>
-            <label for="exam-${escapeHTML(exam.name)}">${escapeHTML(exam.name)} <span>(R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span></label>
-          `;
-          examListContainer.appendChild(div);
-          const checkbox = div.querySelector('input');
-          checkbox.addEventListener('change', () => {
-            if (checkbox.checked) {
-              if (!selectedExams.some(selected => selected.name === exam.name)) {
-                selectedExams.push({ name: exam.name, price: exam.price });
-              }
-            } else {
-              selectedExams = selectedExams.filter(selected => selected.name !== exam.name);
-            }
-            renderSelectedExams();
-          });
-        });
-      }
-      examListContainer.style.display = filterText ? 'block' : 'none';
+    });
+  }
+  examListContainer.style.display = filterText ? 'block' : 'none';
     }
 
     function renderPriceManagementList() {
@@ -1818,7 +1805,6 @@ body {
             const worksheet = workbook.Sheets[sheetName];
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
 
-            // Assume first column is name, second is price
             const newExams = jsonData
               .slice(1) // Skip header
               .filter(row => row[0] && !isNaN(parseFloat(row[1])))
@@ -1829,9 +1815,9 @@ body {
               .filter(exam => exam.name && exam.price > 0);
 
             if (newExams.length > 0) {
-              // Clear existing exams
+
               db.run("DELETE FROM exams");
-              // Insert new exams
+
               const stmt = db.prepare("INSERT INTO exams (name, price) VALUES (?, ?)");
               newExams.forEach(exam => {
                 stmt.run([exam.name, exam.price]);
@@ -1928,7 +1914,6 @@ body {
     document.getElementById('excelUpload').addEventListener('change', handleExcelUpload);
     document.getElementById('saveButton').addEventListener('click', saveChanges);
 
-    // Initialize database and render initial state
     initDatabase().then(() => {
       renderSelectedExams();
       renderExamCheckboxes();
