@@ -1683,20 +1683,23 @@ if (printType === 'thermal') {
     <head>
       <title>Resumo de Exames</title>
   <style>
+    @page {
+      margin: 0; /* Remove margens padrão da página na impressão */
+    }
     body {
       font-family: monospace;
       font-size: 10pt;
       margin: 0;
-      padding: 5mm;
+      padding: 0 5mm 5mm 0; /* Remove padding à esquerda, mantém nos outros lados */
       width: 80mm;
       line-height: 1.2;
       color: #000;
       background: #fff;
-      text-align: left; /* Adicionado para alinhar à esquerda */
+      text-align: left; /* Garante alinhamento à esquerda */
     }
     .line { margin-bottom: 0.3em; }
     .divider { border-top: 1px dashed #000; margin: 0.5em 0; }
-    .center { text-align: center; } /* Mantido para outros elementos que precisam de centralização */
+    .center { text-align: center; } /* Mantido para elementos que precisam de centralização */
     .bold { font-weight: bold; }
     .warning { margin: 0.5em 0; font-size: 9pt; }
     .warning-title { font-weight: bold; text-align: center; }
