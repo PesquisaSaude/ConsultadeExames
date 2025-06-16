@@ -1709,10 +1709,10 @@ if (printType === 'thermal') {
       <div class="center bold">Orçamento de Exames SESI</div>
       <div class="divider"></div>
       <div class="line">Gerado em: ${new Date().toLocaleString('pt-BR')}</div>
-      <div class="line">Responsável: ${responsible}</div>
+      <div class="line">Responsável pelo Orçamento: ${responsible}</div>
       <div class="line">Solicitante: ${solicitante}</div>
-      <div class="line">Telefone: ${telefone}</div>
-      ${cpfInput ? `<div class="line">CPF: ${cpfInput}</div>` : ''}
+      <div class="line">Telefone do Solicitante: ${telefone}</div>
+      ${cpfInput ? `<div class="line">CPF do Solicitante: ${cpfInput}</div>` : ''}
       <div class="divider"></div>
       <div class="center bold">Exames Selecionados</div>
       ${selectedExams.length === 0 ? `
@@ -1807,9 +1807,9 @@ if (printType === 'thermal') {
               </div>
             </div>
             <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-            <p>Responsável: ${responsible}</p>
-            <p>Solicitante: ${solicitante} ${cpfInput ? `(CPF: ${cpfInput})` : ''}</p>
-            <p>Telefone: ${telefone}</p>
+            <p>Responsável pelo Orçamento: ${responsible}</p>
+            <p>Solicitante: ${solicitante} ${cpfInput ? `(CPF do Solicitante: ${cpfInput})` : ''}</p>
+            <p>Telefone do Solicitante: ${telefone}</p>
           </div>
           <div class="print-exams-section">
             <h2>Exames Selecionados</h2>
