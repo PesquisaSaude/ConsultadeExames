@@ -1682,29 +1682,25 @@ if (printType === 'thermal') {
     <html>
     <head>
       <title>Resumo de Exames</title>
-<style>
-  body {
-    font-family: monospace;
-    font-size: 12pt;
-    margin: 0;
-    padding: 5mm;
-    width: 80mm;
-    line-height: 1.2;
-    color: #000;
-    background: #fff;
-  }
-  .line { margin-bottom: 0.3em; }
-  .divider { border-top: 1px dashed #000; margin: 0.5em 0; }
-  .center { text-align: center; }
-  .bold { font-weight: bold; }
-  .warning { margin: 0.5em 0; font-size: 9pt; }
-  .warning-title { font-weight: bold; text-align: center; }
-  body.thermal-print,
-  body.thermal-print .center,
-  body.thermal-print .warning-title {
-    text-align: left !important;
-  }
-</style>
+  <style>
+    body {
+      font-family: monospace;
+      font-size: 10pt;
+      margin: 0;
+      padding: 5mm;
+      width: 80mm;
+      line-height: 1.2;
+      color: #000;
+      background: #fff;
+      text-align: left; /* Adicionado para alinhar à esquerda */
+    }
+    .line { margin-bottom: 0.3em; }
+    .divider { border-top: 1px dashed #000; margin: 0.5em 0; }
+    .center { text-align: center; } /* Mantido para outros elementos que precisam de centralização */
+    .bold { font-weight: bold; }
+    .warning { margin: 0.5em 0; font-size: 9pt; }
+    .warning-title { font-weight: bold; text-align: center; }
+  </style>
     </head>
     <body>
       <div class="center bold">Orçamento de Exames SESI</div>
