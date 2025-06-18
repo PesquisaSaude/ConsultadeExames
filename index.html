@@ -752,7 +752,7 @@
             </div>
             <div class="form-group">
               <input type="file" id="excelUpload" accept=".xlsx,.xls" aria-label="Carregar arquivo Excel">
-              <button id="uploadExcelButton" class="btn-primary" aria-label="Carregar planilha Excel"><i class="fas type="submit" value="Enviar"></i> Carregar Excel</button>
+              <button id="uploadExcelButton" class="btn-primary" aria-label="Carregar planilha Excel"><i class="fas fa-upload"></i> Carregar Excel</button>
             </div>
             <div class="exam-list" id="examList"></div>
             <div class="button-container">
@@ -764,11 +764,10 @@
     </div>
   </div>
   <script type="text/javascript">
-
     const initialExams = [
   { name: "Abertura Coronária e Encaminhamento para Endodontia", price: 60.00 },
   { name: "Acetilcolinesterase Plasmática", price: 20.00 },
-  { name: "Ácido 2 Etoxiacético", price: 549.00 },
+  { name: "Ácido 2 Etoxiacético", price: 949.00 },
   { name: "Ácido Fenilglioxílico (Final da Jornada de Trabalho)", price: 41.00 },
   { name: "Ácido Fólico", price: 72.00 },
   { name: "Ácido Fórmico", price: 110.00 },
@@ -1246,827 +1245,833 @@
   { name: "Waller Rose", price: 22.00 },
   { name: "Zika Virus-Sorologia Total - IgG", price: 254.00 },
   { name: "Zika Virus-Sorologia Total - IgM", price: 281.00 }
+      
     ];
 
     let db;
-let selectedExams = [];
+    let selectedExams = [];
 
-async function initDatabase() {
-  try {
-    const sql = await initSqlJs({ locateFile: file => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm' });
-    db = new sql.Database();
-    db.run(`
-      CREATE TABLE IF NOT EXISTS exams (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,
-        price REAL NOT NULL
-      );
-    `);
-
-    const count = db.exec("SELECT COUNT(*) AS count FROM exams")[0].values[0][0];
-    if (count === 0 && initialExams && initialExams.length > 0) {
-      const stmt = db.prepare("INSERT INTO exams (name, price) VALUES (?, ?)");
-      initialExams.forEach(exam => {
-        stmt.run([exam.name, exam.price]);
-      });
-      stmt.free();
-    }
-  } catch (error) {
-    console.error('Erro ao inicializar o banco de dados:', error);
-    alert('Falha ao carregar o sistema. Verifique sua conexão com a internet ou tente outro navegador.');
-    return null;
-  }
-}
-
-function getExams(filterText = '') {
-  try {
-    let query = "SELECT name, price FROM exams";
-    let params = [];
-    let exams = [];
-
-    const stmt = db.prepare(query);
-    while (stmt.step()) {
-      const row = stmt.getAsObject();
-      exams.push({ name: row.name, price: parseFloat(row.price) });
-    }
-    stmt.free();
-
-    if (filterText) {
-      const normalizedFilter = normalizeString(filterText);
-      exams = exams.filter(exam => 
-        normalizeString(exam.name).includes(normalizedFilter)
-      );
-    }
-
-    exams.sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'base' }));
-    return exams;
-  } catch (error) {
-    console.error('Erro ao buscar exames:', error);
-    return [];
-  }
-}
-
-function normalizeString(str) {
-  return str
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[-_]/g, '')
-    .toLowerCase();
-}
-
-function renderExamCheckboxes(filterText = '') {
-  const examListContainer = document.querySelector('#examListContainer');
-  examListContainer.innerHTML = '';
-  const filteredExams = getExams(filterText);
-  const fragment = document.createDocumentFragment();
-
-  if (filteredExams.length === 0 && filterText) {
-    const div = document.createElement('div');
-    div.className = 'no-results';
-    div.textContent = 'Nenhum exame encontrado';
-    fragment.appendChild(div);
-  } else {
-    filteredExams.forEach(exam => {
-      const div = document.createElement('div');
-      div.className = 'exam-checkbox';
-      const isChecked = selectedExams.some(selected => selected.name === exam.name);
-      div.innerHTML = `
-        <input type="checkbox" id="exam-${escapeHTML(exam.name)}" value="${escapeHTML(exam.name)}" ${isChecked ? 'checked' : ''} aria-label="Selecionar exame ${escapeHTML(exam.name)}">
-        <label for="exam-${escapeHTML(exam.name)}">${escapeHTML(exam.name)} <span>(R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span></label>
-      `;
-      fragment.appendChild(div);
-    });
-  }
-  examListContainer.appendChild(fragment);
-  examListContainer.style.display = filterText ? 'block' : 'none';
-
-  document.querySelectorAll('.exam-checkbox input').forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-      const examName = checkbox.value;
-      const exam = filteredExams.find(e => e.name === examName);
-      if (checkbox.checked) {
-        if (!selectedExams.some(selected => selected.name === examName)) {
-          selectedExams.push({ name: examName, price: exam.price });
-        }
-      } else {
-        selectedExams = selectedExams.filter(selected => selected.name !== examName);
-      }
-      renderSelectedExams();
-    });
-  });
-}
-
-function renderSelectedExams() {
-  const tableBody = document.getElementById('selectedExamTable');
-  tableBody.innerHTML = '';
-  const fragment = document.createDocumentFragment();
-  selectedExams.forEach((exam, index) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td data-label="Exame">${escapeHTML(exam.name)}</td>
-      <td data-label="Preço">R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-      <td data-label="Ação" class="action-cell">
-        <button class="delete-exam-btn" data-index="${index}" aria-label="Excluir exame ${escapeHTML(exam.name)}">
-          <i class="fas fa-trash"></i>
-        </button>
-      </td>
-    `;
-    fragment.appendChild(row);
-  });
-  tableBody.appendChild(fragment);
-
-  // Adicionar evento de clique aos botões de exclusão
-  document.querySelectorAll('.delete-exam-btn').forEach(button => {
-    button.addEventListener('click', (e) => {
-      const index = parseInt(e.target.closest('button').dataset.index);
-      selectedExams.splice(index, 1); // Remove o exame da lista
-      renderSelectedExams(); // Re-renderiza a tabela
-      renderExamCheckboxes(document.querySelector('#examSearch').value); // Atualiza a lista de checkboxes
-    });
-  });
-
-  updateTotal();
-}
-
-function renderPriceManagementList() {
-  const examListItems = document.querySelector('#examList');
-  examListItems.innerHTML = '';
-  const exams = getExams();
-  const fragment = document.createDocumentFragment();
-  exams.forEach((exam, index) => {
-    const div = document.createElement('div');
-    div.className = 'exam-item';
-    div.innerHTML = `
-      <span>${escapeHTML(exam.name)} - R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-      <div>
-        <button class="edit-price" data-name="${escapeHTML(exam.name)}" aria-label="Editar preço do exame ${escapeHTML(exam.name)}"><i class="fas fa-edit"></i></button>
-        <button class="delete-exam" data-name="${escapeHTML(exam.name)}" aria-label="Excluir exame ${escapeHTML(exam.name)}"><i class="fas fa-trash"></i></button>
-      </div>
-    `;
-    fragment.appendChild(div);
-  });
-  examListItems.appendChild(fragment);
-
-  document.querySelectorAll('.edit-price').forEach(button => {
-    button.addEventListener('click', (e) => {
-      const name = e.target.closest('button').dataset.name;
-      const newPrice = prompt('Digite o novo preço:', exams.find(exam => exam.name === name).price);
-      if (newPrice && !isNaN(newPrice) && newPrice > 0) {
-        try {
-          const stmt = db.prepare("UPDATE exams SET price = ? WHERE name = ?");
-          stmt.run([parseFloat(newPrice), name]);
-          stmt.free();
-          renderPriceManagementList();
-          renderExamCheckboxes(document.querySelector('#examSearch').value);
-          selectedExams = selectedExams.map(exam => 
-            exam.name === name ? { ...exam, price: parseFloat(newPrice) } : exam
-          );
-          renderSelectedExams();
-        } catch (error) {
-          console.error('Erro ao atualizar preço:', error);
-          alert('Falha ao atualizar o preço do exame.');
-        }
-      }
-    });
-  });
-
-  document.querySelectorAll('.delete-exam').forEach(button => {
-    button.addEventListener('click', (e) => {
-      const name = e.target.closest('button').dataset.name;
-      if (confirm(`Deseja excluir o exame "${name}"?`)) {
-        try {
-          const stmt = db.prepare("DELETE FROM exams WHERE name = ?");
-          stmt.run([name]);
-          stmt.free();
-          renderPriceManagementList();
-          renderExamCheckboxes(document.querySelector('#examSearch').value);
-          selectedExams = selectedExams.filter(exam => exam.name !== name);
-          renderSelectedExams();
-        } catch (error) {
-          console.error('Erro ao excluir exame:', error);
-          alert('Falha ao excluir o exame.');
-        }
-      }
-    });
-  });
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return 'Não informado';
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
-  if (isNaN(date.getTime())) return 'Não informado';
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
-}
-
-function validateCPF(cpf) {
-  cpf = cpf.replace(/\D/g, '');
-  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
-
-  let sum = 0;
-  for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i);
-  let digit1 = 11 - (sum % 11);
-  if (digit1 > 9) digit1 = 0;
-  if (parseInt(cpf[9]) !== digit1) return false;
-
-  sum = 0;
-  for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i);
-  let digit2 = 11 - (sum % 11);
-  if (digit2 > 9) digit2 = 0;
-  return parseInt(cpf[10]) === digit2;
-}
-
-function validatePromoDates() {
-  const startDateInput = document.querySelector('#promoStartDate');
-  const endDateInput = document.querySelector('#promoEndDate');
-  const startDateError = document.querySelector('#promoStartDateError');
-  const endDateError = document.querySelector('#promoEndDateError');
-
-  startDateError.style.display = 'none';
-  endDateError.style.display = 'none';
-
-  if (!startDateInput.value) {
-    startDateInput.classList.add('error');
-    startDateError.style.display = 'block';
-    return false;
-  }
-  startDateInput.classList.remove('error');
-
-  if (endDateInput.value && startDateInput.value) {
-    const startDate = new Date(startDateInput.value);
-    const endDate = new Date(endDateInput.value);
-    if (endDate < startDate) {
-      endDateInput.classList.add('error');
-      endDateError.style.display = 'block';
-      return false;
-    }
-    endDateInput.classList.remove('error');
-  }
-  return true;
-}
-
-function validateDiscountInput(inputId, errorId) {
-  const input = document.querySelector(`#${inputId}`);
-  const inputError = document.querySelector(`#${errorId}`);
-  const value = parseFloat(input.value);
-  if (isNaN(value) || value < 0 || (inputId === 'discountInput' && value > 70) || (inputId === 'promoDiscountInput' && value > 25)) {
-    input.classList.add('error');
-    inputError.style.display = 'block';
-    return false;
-  } else {
-    input.classList.remove('error');
-    inputError.style.display = 'none';
-    return true;
-  }
-}
-
-function validatePhone() {
-  const phoneInput = document.getElementById('telefoneInput');
-  const phoneError = document.querySelector('#phoneError');
-  const phonePattern = /^\d{10,11}$/;
-  if (!phonePattern.test(phoneInput.value) && phoneInput.value.isNaN !== '') {
-    phoneInput.classList.add('error');
-    phoneError.style.display = 'block';
-    return false;
-  } else {
-    phoneInput.classList.remove('error');
-    phoneError.style.display = 'none';
-    return true;
-  }
-}
-
-function clearSelections() {
-  selectedExams = [];
-  document.getElementById('examSearch').value = '';
-  document.getElementById('discountInput').value = '';
-  document.getElementById('promoDiscountInput').value = '';
-  document.getElementById('enableIndustryDiscount').checked = false;
-  document.getElementById('enablePromoDiscount').checked = false;
-  document.getElementById('promoType').value = '';
-  document.getElementById('promoStartDate').value = '';
-  document.getElementById('promoEndDate').value = '';
-  document.getElementById('otherPromoInput').value = '';
-  document.getElementById('discountInput').disabled = true;
-  document.getElementById('promoDiscountInput').disabled = true;
-  document.getElementById('promoType').disabled = true;
-  document.getElementById('promoStartDate').disabled = true;
-  document.getElementById('promoEndDate').disabled = true;
-  document.getElementById('otherPromoContainer').style.display = 'none';
-  document.getElementById('promoDetails').classList.remove('active');
-  document.getElementById('responsibleInput').value = '';
-  document.getElementById('solicitanteInput').value = '';
-  document.getElementById('telefoneInput').value = '';
-  document.getElementById('cpfInput').value = '';
-  document.querySelector('#printType').value = 'standard';
-  document.getElementById('totalPrice').textContent = '0,00';
-  document.getElementById('discountPercent').textContent = '0';
-  document.getElementById('discountValue').textContent = '0,00';
-  document.getElementById('promoDiscountPercent').textContent = '0';
-  document.getElementById('promoDiscountValue').textContent = '0,00';
-  document.getElementById('finalPrice').textContent = '0,00';
-  document.getElementById('promoStartDateError').style.display = 'none';
-  document.getElementById('promoEndDateError').style.display = 'none';
-  document.getElementById('promoStartDate').classList.remove('error');
-  document.getElementById('promoEndDate').classList.remove('error');
-  document.getElementById('discountInputError').style.display = 'none';
-  document.getElementById('promoDiscountInputError').style.display = 'none';
-  document.getElementById('discountInput').classList.remove('error');
-  document.getElementById('promoDiscountInput').classList.remove('error');
-  document.getElementById('cpfError').style.display = 'none';
-  document.getElementById('cpfInput').classList.remove('error');
-  renderSelectedExams();
-  renderExamCheckboxes();
-}
-
-function updateTotal() {
-  let total = selectedExams.reduce((sum, exam) => sum + exam.price, 0);
-  let discountPercent = document.getElementById('enableIndustryDiscount').checked ? (parseFloat(document.getElementById('discountInput').value) || 0) : 0;
-  let promoDiscountPercent = document.getElementById('enablePromoDiscount').checked ? (parseFloat(document.getElementById('promoDiscountInput').value) || 0) : 0;
-  discountPercent = Math.max(0, Math.min(70, discountPercent));
-  promoDiscountPercent = Math.max(0, Math.min(25, promoDiscountPercent));
-  const discountValue = total * (discountPercent / 100);
-  const intermediateTotal = Math.max(total - discountValue, 0);
-  const promoDiscountValue = intermediateTotal * (promoDiscountPercent / 100);
-  const finalPrice = Math.max(intermediateTotal - promoDiscountValue, 0);
-  document.getElementById('totalPrice').textContent = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  document.getElementById('discountPercent').textContent = discountPercent.toFixed(2);
-  document.getElementById('discountValue').textContent = discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  document.getElementById('promoDiscountPercent').textContent = promoDiscountPercent.toFixed(2);
-  document.getElementById('promoDiscountValue').textContent = promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  document.getElementById('finalPrice').textContent = finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function applyDiscount() {
-  if (validateDiscountInput('discountInput', 'discountInputError')) {
-    updateTotal();
-  }
-}
-
-function applyPromoDiscount() {
-  if (validateDiscountInput('promoDiscountInput', 'promoDiscountInputError') && validatePromoDates()) {
-    updateTotal();
-  }
-}
-
-function escapeHTML(str) {
-  const htmlEntities = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&apos;'
-  };
-  return str.replace(/[&<>"']/g, match => htmlEntities[match]);
-}
-
-function saveChanges() {
-  alert('Alterações salvas com sucesso no banco de dados!');
-}
-
-function printSummary() {
-  const cpfInput = document.getElementById('cpfInput').value;
-  if (cpfInput && !validateCPF(cpfInput)) {
-    document.getElementById('cpfError').style.display = 'block';
-    document.getElementById('cpfInput').classList.add('error');
-    return;
-  } else {
-    document.getElementById('cpfError').style.display = 'none';
-    document.getElementById('cpfInput').classList.remove('error');
-  }
-
-  if (selectedExams.length === 0) {
-    alert('Selecione pelo menos um exame antes de imprimir.');
-    return;
-  }
-  if (!validatePhone() && document.getElementById('telefoneInput').value !== '') {
-    alert('Corrija o número de telefone antes de imprimir.');
-    return;
-  }
-  if (document.getElementById('enablePromoDiscount').checked && !validatePromoDates()) {
-    alert('Corrija as datas promocionais antes de imprimir.');
-    return;
-  }
-
-  const total = parseFloat(document.getElementById('totalPrice').textContent.replace(',', '.'));
-  const discountPercent = parseFloat(document.getElementById('discountPercent').textContent);
-  const discountValue = parseFloat(document.getElementById('discountValue').textContent.replace(',', '.'));
-  const promoDiscountPercent = parseFloat(document.getElementById('promoDiscountPercent').textContent);
-  const promoDiscountValue = parseFloat(document.getElementById('promoDiscountValue').textContent.replace(',', '.'));
-  const finalPrice = parseFloat(document.getElementById('finalPrice').textContent.replace(',', '.'));
-  const responsible = escapeHTML(document.getElementById('responsibleInput').value || 'Não informado');
-  const solicitante = escapeHTML(document.getElementById('solicitanteInput').value || 'Não informado');
-  const telefone = escapeHTML(document.getElementById('telefoneInput').value || 'Não informado');
-  const promoTypeValue = document.getElementById('promoType').value;
-  const promoType = promoTypeValue === 'Outros' ? escapeHTML(document.getElementById('otherPromoInput').value || 'Não informado') : escapeHTML(promoTypeValue || 'Não informado');
-  const promoStartDateRaw = document.getElementById('promoStartDate').value;
-  const promoEndDateRaw = document.getElementById('promoEndDate').value;
-  const promoStartDate = formatDate(promoStartDateRaw);
-  const promoEndDate = formatDate(promoEndDateRaw);
-  const isIndustryDiscountApplied = document.getElementById('enableIndustryDiscount').checked && discountPercent > 0;
-  const isPromoDiscountApplied = document.getElementById('enablePromoDiscount').checked && promoDiscountPercent > 0;
-  const currentYear = new Date().getFullYear();
-  const isPromoValid = isPromoDiscountApplied &&
-                       promoStartDate !== 'Não informado' &&
-                       promoEndDate !== 'Não informado' &&
-                       new Date(promoEndDateRaw) >= new Date(promoStartDateRaw);
-  const printType = document.getElementById('printType').value;
-
-  let printContent;
-
-if (printType === 'thermal') {
-  printContent = `
-    <html>
-    <head>
-      <title>Resumo de Exames</title>
-  <style>
-@page {
-    margin: 0; /* Remove margens padrão da página na impressão */
-  }
-  body {
-    font-family: monospace;
-    font-size: 10pt;
-    margin: 0;
-    padding: 0 5mm 5mm 0; /* Remove padding à esquerda, mantém nos outros lados */
-    width: 80mm;
-    line-height: 1.2;
-    color: #000;
-    background: #fff;
-    text-align: left; /* Garante alinhamento à esquerda */
-  }
-  .line { margin-bottom: 0.3em; }
-  .divider { border-top: 1px dashed #000; margin: 0.5em 0; }
-  .center { text-align: center; } /* Mantido para elementos que precisam de centralização */
-  .bold { font-weight: bold; }
-  .warning {
-    margin: 0.5em 0;
-    font-size: 9pt;
-    text-align: center; /* Centraliza o conteúdo do aviso */
-  }
-  .warning-title { font-weight: bold; text-align: center; }
-  </style>
-    </head>
-    <body>
-      <div class="center bold"><p>SERVIÇO SOCIAL DA INDÚSTRIA</p>
-                              <P>CNPJ: 03.910.210/0025-82</P>
-                              <P>ORÇAMENTO DE EXAMES</P></div>
-      <div class="divider"></div>
-      <div class="line">Gerado em: ${new Date().toLocaleString('pt-BR')}</div>
-      <div class="line">Responsável pelo Orçamento: ${responsible}</div>
-      <div class="line">Solicitante: ${solicitante}</div>
-      <div class="line">Telefone do Solicitante: ${telefone}</div>
-      ${cpfInput ? `<div class="line">CPF do Solicitante: ${cpfInput}</div>` : ''}
-      <div class="divider"></div>
-      <div class="center bold">Exames Selecionados</div>
-      ${selectedExams.length === 0 ? `
-        <div class="line center">Nenhum exame selecionado</div>
-      ` : selectedExams.map(exam => `
-        <div class="line">${exam.name.substring(0, 40)}</div>
-        <div class="price">R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-      `).join('')}
-      <div class="divider"></div>
-      <div class="line">Valor Total: R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-      ${isIndustryDiscountApplied ? `
-        <div class="line">Desconto Indústria: R$ ${discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-      ` : ''}
-      ${isPromoDiscountApplied ? `
-        <div class="line">Desconto Promocional: R$ ${promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-      ` : ''}
-      <div class="line bold">Total do Pagamento: R$ ${finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-      ${isPromoDiscountApplied ? `
-        <div class="divider"></div>
-        <div class="line">Promoção: ${promoType}</div>
-        ${isPromoValid ? `
-          <div class="line">Vigência: ${promoStartDate} a ${promoEndDate}</div>
-        ` : `
-          <div class="line">Promoção: Datas inválidas. Verifique.</div>
-        `}
-      ` : ''}
-      <div class="divider"></div>
-      <div class="warning">
-        <div class="warning-title">AVISO IMPORTANTE</div>
-        <div class="line">Ao solicitar este orçamento, o cliente autoriza o uso de dados pessoais (nome, telefone, CPF) para esta finalidade.</div>
-        <div class="line">Orçamento válido até ${currentYear}. Valores podem ser ajustados por promoções ou atualizações.</div>
-        ${isPromoValid ? `
-          <div class="line">Promoção válida de ${promoStartDate} a ${promoEndDate}.</div>
-        ` : ''}
-      </div>
-      <div class="divider"></div>
-      <div class="line">Endereço: Rua Frei Cassiano, 88</div>
-      <div class="line">Santo Amaro, Recife - PE</div>
-      <div class="line">Data: ${new Date().toLocaleString('pt-BR')}</div>
-    </body>
-    </html>
-    `;
-  } else {
-    printContent = `
-      <html>
-      <head>
-        <title>Resumo de Exames</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <style>
-          @media print { .no-print { display: none; } @page { margin: 2cm; } .btn-primary { display: none; } }
-          body { font-family: 'Inter', sans-serif; color: #111827; background: white; margin: 0; padding: 2rem; }
-          .print-container { max-width: 800px; margin: 0 auto; padding: 1.5rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background: #ffffff; }
-          .print-header { margin-bottom: 2rem; border-bottom: 2px solid #2563eb; padding-bottom: 1rem; }
-          .print-header .header-container { display: flex; align-items: center; justify-content: space-between; }
-          .print-header .logo-container img { max-width: 120px; height: auto; }
-          .print-header .title-container { flex: 1; text-align: center; }
-          .print-header h1 { font-size: 1.5rem; color: #111827; margin: 0; }
-          .print-header p { color: #555; font-size: 0.875rem; margin: 0.5rem 0; }
-          .print-exams-section { margin-bottom: 2rem; }
-          .print-exams-section h2 { font-size: 1.25rem; margin-bottom: 1rem; text-align: center; color: #2563eb; }
-          .print-table { width: 100%; border-collapse: collapse; }
-          .print-table th { background: #2563eb; color: white; padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.875rem; }
-          .print-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 0.875rem; }
-          .print-table tr:hover { background: #f3f4f6; }
-          .print-summary { background: #f0f7ff; padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem; }
-          .print-summary p { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; margin: 0.5rem 0; }
-          .print-summary .final-price { font-size: 1.25rem; font-weight: 600; color: #2563eb; }
-          .print-warning { background: #fef2f2; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border: 1px solid #ef4444; color: #111827; font-size: 0.875rem; }
-          .print-warning i { margin-right: 0.5rem; color: #ef4444; }
-          .print-footer { text-align: center; color: #555; font-size: 0.875rem; margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1rem; }
-          @media (max-width: 640px) {
-            .print-table { display: block; }
-            .print-table thead { display: none; }
-            .print-table tbody, .print-table tr { display: block; }
-            .print-table td { display: block; text-align: left; padding: 0.5rem; border-bottom: none; }
-            .print-table td:before { content: attr(data-label); font-weight: bold; display: inline-block; width: 100%; margin-bottom: 0.2rem; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="print-container">
-          <div class="print-header">
-            <div class="header-container">
-              <div class="logo-container">
-                <img src="img/sesi.jpg" alt="SESI Logo">
-              </div>
-              <div class="title-container">
-                <h1>Orçamento de Exames e Especialidades</h1>
-              </div>
-              <div class="logo-container">
-                <img src="img/melhoria.jpg" alt="Melhoria Logo">
-              </div>
-            </div>
-            <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
-            <p>Responsável pelo Orçamento: ${responsible}</p>
-            <p>Solicitante: ${solicitante} ${cpfInput ? `(CPF do Solicitante: ${cpfInput})` : ''}</p>
-            <p>Telefone do Solicitante: ${telefone}</p>
-          </div>
-          <div class="print-exams-section">
-            <h2>Exames Selecionados</h2>
-            <table class="print-table">
-              <thead>
-                <tr>
-                  <th>Exame</th>
-                  <th>R$</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${selectedExams.length === 0 ? `
-                  <tr>
-                    <td colspan="2" style="text-align: center; color: #6b7280;">Nenhum exame selecionado</td>
-                  </tr>
-                ` : selectedExams.map(exam => `
-                  <tr>
-                    <td data-label="Exame">${escapeHTML(exam.name)}</td>
-                    <td data-label="Preço">R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-          <div class="print-summary">
-            <p><i class="fas fa-money-bill-wave"></i> Valor Total: R$ <span>${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
-            ${isIndustryDiscountApplied ? `<p><i class="fas fa-percentage"></i> Desconto Indústria: R$ <span>${discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (<span>${discountPercent.toFixed(2)}</span>%)</p>` : ''}
-            ${isPromoDiscountApplied ? `<p><i class="fas fa-star"></i> Desconto Promocional: R$ <span>${promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (<span>${promoDiscountPercent.toFixed(2)}</span>%)</p>` : ''}
-            <p class="final-price"><i class="fas fa-wallet"></i> Total do Pagamento: R$ <span>${finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
-            ${isPromoDiscountApplied ? `
-              <p><i class="fas fa-tag"></i> Tipo de Promoção: <span>${promoType}</span></p>
-              ${isPromoValid ? `
-                <p><i class="fas fa-calendar-alt"></i> Início da Promoção: <span>${promoStartDate}</span></p>
-                <p><i class="fas fa-calendar-alt"></i> Término da Promoção: <span>${promoEndDate}</span></p>
-                <p><i class="fas fa-info-circle"></i> Vigência da Promoção: <span>Os descontos promocionais são válidos apenas dentro do período especificado (${promoStartDate} a ${promoEndDate}).</span></p>
-              ` : `
-                <p><i class="fas fa-exclamation-circle"></i> Promoção: <span>Datas de promoção inválidas ou não informadas. O desconto promocional será aplicado, mas verifique as datas.</span></p>
-              `}
-            ` : ''}
-          </div>
-          <div class="print-warning">
-            <i class="fas fa-exclamation-triangle"></i>
-            <strong>AVISO IMPORTANTE</strong><br>
-            <p>Ao solicitar o orçamento de exames laboratoriais e especialidades médicas, o cliente declara expressamente que autoriza o tratamento dos dados pessoais de nome, telefone e CPF, para essa finalidade específica.</p>
-            <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o cliente será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p>
-          </div>
-          <div class="print-footer">
-            <p>Endereço: <a href="https://www.google.com/maps/place/Rua+Frei+Cassimiro,+88,+Santo+Amaro,+Recife,+PE,+50100-260" target="_blank">Rua Frei Cassimiro, 88 - Santo Amaro, Recife - PE, 50100-260</a></p>
-            <p>Data: ${new Date().toLocaleString('pt-BR')}</p>
-          </div>
-          <button id="printButtonWindow" class="btn-primary no-print"><i class="fas fa-print mr-2"></i> Imprimir</button>
-        </div>
-      </body>
-      </html>
-    `;
-  }
-
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) {
-    alert('Não foi possível abrir a janela de impressão. Verifique as configurações de pop-ups do seu navegador.');
-    return;
-  }
-  printWindow.document.write(printContent);
-  printWindow.document.close();
-  printWindow.document.getElementById('printButtonWindow')?.addEventListener('click', () => printWindow.print());
-}
-
-function handleLogin() {
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
-  const loginError = document.getElementById('loginError');
-
-  if (username === 'SESI' && password === 'sistema@2025') {
-    loginError.style.display = 'none';
-    document.getElementById('priceManagement').classList.add('active');
-    document.querySelector('.modal-content .form-group').style.display = 'none';
-    document.querySelector('.modal-content .button-container').style.display = 'none';
-    document.querySelector('.modal-content h2').textContent = 'Gerenciamento de Preços';
-    renderPriceManagementList();
-  } else {
-    loginError.style.display = 'block';
-  }
-}
-
-function handleAddExam() {
-  const name = document.getElementById('newExamName').value.trim();
-  const price = parseFloat(document.getElementById('newExamPrice').value);
-  if (name && !isNaN(price) && price > 0) {
-    try {
-      const stmt = db.prepare("INSERT INTO exams (name, price) VALUES (?, ?)");
-      stmt.run([name, price]);
-      stmt.free();
-      document.getElementById('newExamName').value = '';
-      document.getElementById('newExamPrice').value = '';
-      renderPriceManagementList();
-      renderExamCheckboxes(document.querySelector('#examSearch').value);
-    } catch (error) {
-      console.error('Erro ao adicionar exame:', error);
-      alert('Falha ao adicionar o exame. Verifique se o nome já existe.');
-    }
-  } else {
-    alert('Por favor, insira um nome válido e um preço maior que zero.');
-  }
-}
-
-function handleExcelUpload(event) {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
+    async function initDatabase() {
       try {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
+        const sql = await initSqlJs({ locateFile: file => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm' });
+        db = new sql.Database();
+        db.run(`
+          CREATE TABLE IF NOT EXISTS exams (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            price REAL NOT NULL
+          );
+        `);
 
-        if (jsonData.length < 1 || !jsonData[0].includes('name') || !jsonData[0].includes('price')) {
-          throw new Error('Formato inválido: o arquivo deve conter as colunas "name" e "price".');
-        }
-
-        const newExams = jsonData
-          .slice(1)
-          .filter(row => row[0] && !isNaN(parseFloat(row[1])))
-          .map(row => ({
-            name: String(row[0]).trim(),
-            price: parseFloat(row[1])
-          }))
-          .filter(exam => exam.name && exam.price > 0);
-
-        if (newExams.length > 0) {
-          db.run("DELETE FROM exams");
+        const count = db.exec("SELECT COUNT(*) AS count FROM exams")[0].values[0][0];
+        if (count === 0 && initialExams && initialExams.length > 0) {
           const stmt = db.prepare("INSERT INTO exams (name, price) VALUES (?, ?)");
-          newExams.forEach(exam => {
+          initialExams.forEach(exam => {
             stmt.run([exam.name, exam.price]);
           });
           stmt.free();
-          renderPriceManagementList();
-          renderExamCheckboxes(document.querySelector('#examSearch').value);
-          selectedExams = selectedExams.filter(exam => newExams.some(e => e.name === exam.name));
-          renderSelectedExams();
-          alert('Tabela de preços atualizada com sucesso!');
-        } else {
-          alert('Nenhum exame válido encontrado no arquivo Excel.');
         }
       } catch (error) {
-        console.error('Erro ao processar o arquivo Excel:', error);
-        alert(`Erro ao processar o arquivo Excel: ${error.message}`);
+        console.error('Erro ao inicializar o banco de dados:', error);
+        alert('Falha ao carregar o sistema. Verifique sua conexão com a internet ou tente outro navegador.');
+        return null;
       }
-    };
-    reader.readAsArrayBuffer(file);
-  }
+    }
+
+    function getExams(filterText = '') {
+      try {
+        let query = "SELECT name, price FROM exams";
+        let params = [];
+        let exams = [];
+
+        const stmt = db.prepare(query);
+        while (stmt.step()) {
+          const row = stmt.getAsObject();
+          exams.push({ name: row.name, price: parseFloat(row.price) });
+        }
+        stmt.free();
+
+        if (filterText) {
+          const normalizedFilter = normalizeString(filterText);
+          exams = exams.filter(exam => 
+            normalizeString(exam.name).includes(normalizedFilter)
+          );
+        }
+
+        exams.sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'base' }));
+        return exams;
+      } catch (error) {
+        console.error('Erro ao buscar exames:', error);
+        return [];
+      }
+    }
+
+    function normalizeString(str) {
+      return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[-_]/g, '')
+        .toLowerCase();
+    }
+
+    function renderExamCheckboxes(filterText = '') {
+      const examListContainer = document.querySelector('#examListContainer');
+      examListContainer.innerHTML = '';
+      const filteredExams = getExams(filterText);
+      const fragment = document.createDocumentFragment();
+
+      if (filteredExams.length === 0 && filterText) {
+        const div = document.createElement('div');
+        div.className = 'no-results';
+        div.textContent = 'Nenhum exame encontrado';
+        fragment.appendChild(div);
+      } else {
+        filteredExams.forEach(exam => {
+          const div = document.createElement('div');
+          div.className = 'exam-checkbox';
+          const isChecked = selectedExams.some(selected => selected.name === exam.name);
+          div.innerHTML = `
+            <input type="checkbox" id="exam-${escapeHTML(exam.name)}" value="${escapeHTML(exam.name)}" ${isChecked ? 'checked' : ''} aria-label="Selecionar exame ${escapeHTML(exam.name)}">
+            <label for="exam-${escapeHTML(exam.name)}">${escapeHTML(exam.name)} <span>(R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</span></label>
+          `;
+          fragment.appendChild(div);
+        });
+      }
+      examListContainer.appendChild(fragment);
+      examListContainer.style.display = filterText ? 'block' : 'none';
+
+      document.querySelectorAll('.exam-checkbox input').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const examName = checkbox.value;
+          const exam = filteredExams.find(e => e.name === examName);
+          if (checkbox.checked) {
+            if (!selectedExams.some(selected => selected.name === examName)) {
+              selectedExams.push({ name: examName, price: exam.price });
+            }
+          } else {
+            selectedExams = selectedExams.filter(selected => selected.name !== examName);
+          }
+          renderSelectedExams();
+        });
+      });
+    }
+
+    function renderSelectedExams() {
+      const tableBody = document.getElementById('selectedExamTable');
+      tableBody.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+      selectedExams.forEach((exam, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td data-label="Exame">${escapeHTML(exam.name)}</td>
+          <td data-label="Preço">R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          <td data-label="Ação" class="action-cell">
+            <button class="delete-exam-btn" data-index="${index}" aria-label="Excluir exame ${escapeHTML(exam.name)}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        `;
+        fragment.appendChild(row);
+      });
+      tableBody.appendChild(fragment);
+
+      document.querySelectorAll('.delete-exam-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+          const index = parseInt(e.target.closest('button').dataset.index);
+          selectedExams.splice(index, 1);
+          renderSelectedExams();
+          renderExamCheckboxes(document.querySelector('#examSearch').value);
+        });
+      });
+
+      updateTotal();
+    }
+
+    function renderPriceManagementList() {
+      const examListItems = document.querySelector('#examList');
+      examListItems.innerHTML = '';
+      const exams = getExams();
+      const fragment = document.createDocumentFragment();
+      exams.forEach((exam, index) => {
+        const div = document.createElement('div');
+        div.className = 'exam-item';
+        div.innerHTML = `
+          <span>${escapeHTML(exam.name)} - R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <div>
+            <button class="edit-price" data-name="${escapeHTML(exam.name)}" aria-label="Editar preço do exame ${escapeHTML(exam.name)}"><i class="fas fa-edit"></i></button>
+            <button class="delete-exam" data-name="${escapeHTML(exam.name)}" aria-label="Excluir exame ${escapeHTML(exam.name)}"><i class="fas fa-trash"></i></button>
+          </div>
+        `;
+        fragment.appendChild(div);
+      });
+      examListItems.appendChild(fragment);
+
+      document.querySelectorAll('.edit-price').forEach(button => {
+        button.addEventListener('click', (e) => {
+          const name = e.target.closest('button').dataset.name;
+          const newPrice = prompt('Digite o novo preço:', exams.find(exam => exam.name === name).price);
+          if (newPrice && !isNaN(newPrice) && newPrice > 0) {
+            try {
+              const stmt = db.prepare("UPDATE exams SET price = ? WHERE name = ?");
+              stmt.run([parseFloat(newPrice), name]);
+              stmt.free();
+              renderPriceManagementList();
+              renderExamCheckboxes(document.querySelector('#examSearch').value);
+              selectedExams = selectedExams.map(exam => 
+                exam.name === name ? { ...exam, price: parseFloat(newPrice) } : exam
+              );
+              renderSelectedExams();
+            } catch (error) {
+              console.error('Erro ao atualizar preço:', error);
+              alert('Falha ao atualizar o preço do exame.');
+            }
+          }
+        });
+      });
+
+      document.querySelectorAll('.delete-exam').forEach(button => {
+        button.addEventListener('click', (e) => {
+          const name = e.target.closest('button').dataset.name;
+          if (confirm(`Deseja excluir o exame "${name}"?`)) {
+            try {
+              const stmt = db.prepare("DELETE FROM exams WHERE name = ?");
+              stmt.run([name]);
+              stmt.free();
+              renderPriceManagementList();
+              renderExamCheckboxes(document.querySelector('#examSearch').value);
+              selectedExams = selectedExams.filter(exam => exam.name !== name);
+              renderSelectedExams();
+            } catch (error) {
+              console.error('Erro ao excluir exame:', error);
+              alert('Falha ao excluir o exame.');
+            }
+          }
+        });
+      });
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return 'Não informado';
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      if (isNaN(date.getTime())) return 'Não informado';
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    }
+
+    function validateCPF(cpf) {
+      cpf = cpf.replace(/\D/g, '');
+      if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+      let sum = 0;
+      for (let i = 0; i < 9; i++) sum += parseInt(cpf[i]) * (10 - i);
+      let digit1 = 11 - (sum % 11);
+      if (digit1 > 9) digit1 = 0;
+      if (parseInt(cpf[9]) !== digit1) return false;
+
+      sum = 0;
+      for (let i = 0; i < 10; i++) sum += parseInt(cpf[i]) * (11 - i);
+      let digit2 = 11 - (sum % 11);
+      if (digit2 > 9) digit2 = 0;
+      return parseInt(cpf[10]) === digit2;
+    }
+
+    function validatePromoDates() {
+      const startDateInput = document.querySelector('#promoStartDate');
+      const endDateInput = document.querySelector('#promoEndDate');
+      const startDateError = document.querySelector('#promoStartDateError');
+      const endDateError = document.querySelector('#promoEndDateError');
+
+      startDateError.style.display = 'none';
+      endDateError.style.display = 'none';
+
+      if (!startDateInput.value) {
+        startDateInput.classList.add('error');
+        startDateError.style.display = 'block';
+        return false;
+      }
+      startDateInput.classList.remove('error');
+
+      if (endDateInput.value && startDateInput.value) {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        if (endDate < startDate) {
+          endDateInput.classList.add('error');
+          endDateError.style.display = 'block';
+          return false;
+        }
+        endDateInput.classList.remove('error');
+      }
+      return true;
+    }
+
+    function validateDiscountInput(inputId, errorId) {
+      const input = document.querySelector(`#${inputId}`);
+      const inputError = document.querySelector(`#${errorId}`);
+      const value = parseFloat(input.value);
+      if (isNaN(value) || value < 0 || (inputId === 'discountInput' && value > 70) || (inputId === 'promoDiscountInput' && value > 25)) {
+        input.classList.add('error');
+        inputError.style.display = 'block';
+        return false;
+      } else {
+        input.classList.remove('error');
+        inputError.style.display = 'none';
+        return true;
+      }
+    }
+
+    function validatePhone() {
+      const phoneInput = document.getElementById('telefoneInput');
+      const phoneError = document.querySelector('#phoneError');
+      const phonePattern = /^\d{10,11}$/;
+      if (!phonePattern.test(phoneInput.value) && phoneInput.value !== '') {
+        phoneInput.classList.add('error');
+        phoneError.style.display = 'block';
+        return false;
+      } else {
+        phoneInput.classList.remove('error');
+        phoneError.style.display = 'none';
+        return true;
+      }
+    }
+
+    function clearSelections() {
+      selectedExams = [];
+      document.getElementById('examSearch').value = '';
+      document.getElementById('discountInput').value = '';
+      document.getElementById('promoDiscountInput').value = '';
+      document.getElementById('enableIndustryDiscount').checked = false;
+      document.getElementById('enablePromoDiscount').checked = false;
+      document.getElementById('promoType').value = '';
+      document.getElementById('promoStartDate').value = '';
+      document.getElementById('promoEndDate').value = '';
+      document.getElementById('otherPromoInput').value = '';
+      document.getElementById('discountInput').disabled = true;
+      document.getElementById('promoDiscountInput').disabled = true;
+      document.getElementById('promoType').disabled = true;
+      document.getElementById('promoStartDate').disabled = true;
+      document.getElementById('promoEndDate').disabled = true;
+      document.getElementById('otherPromoContainer').style.display = 'none';
+      document.getElementById('promoDetails').classList.remove('active');
+      document.getElementById('responsibleInput').value = '';
+      document.getElementById('solicitanteInput').value = '';
+      document.getElementById('telefoneInput').value = '';
+      document.getElementById('cpfInput').value = '';
+      document.querySelector('#printType').value = 'standard';
+      document.getElementById('totalPrice').textContent = '0,00';
+      document.getElementById('discountPercent').textContent = '0';
+      document.getElementById('discountValue').textContent = '0,00';
+      document.getElementById('promoDiscountPercent').textContent = '0';
+      document.getElementById('promoDiscountValue').textContent = '0,00';
+      document.getElementById('finalPrice').textContent = '0,00';
+      document.getElementById('promoStartDateError').style.display = 'none';
+      document.getElementById('promoEndDateError').style.display = 'none';
+      document.getElementById('promoStartDate').classList.remove('error');
+      document.getElementById('promoEndDate').classList.remove('error');
+      document.getElementById('discountInputError').style.display = 'none';
+      document.getElementById('promoDiscountInputError').style.display = 'none';
+      document.getElementById('discountInput').classList.remove('error');
+      document.getElementById('promoDiscountInput').classList.remove('error');
+      document.getElementById('cpfError').style.display = 'none';
+      document.getElementById('cpfInput').classList.remove('error');
+      renderSelectedExams();
+      renderExamCheckboxes();
+    }
+
+    function updateTotal() {
+      let total = selectedExams.reduce((sum, exam) => sum + exam.price, 0);
+      let discountPercent = document.getElementById('enableIndustryDiscount').checked ? (parseFloat(document.getElementById('discountInput').value) || 0) : 0;
+      let promoDiscountPercent = document.getElementById('enablePromoDiscount').checked ? (parseFloat(document.getElementById('promoDiscountInput').value) || 0) : 0;
+      discountPercent = Math.max(0, Math.min(70, discountPercent));
+      promoDiscountPercent = Math.max(0, Math.min(25, promoDiscountPercent));
+      const discountValue = total * (discountPercent / 100);
+      const intermediateTotal = Math.max(total - discountValue, 0);
+      const promoDiscountValue = intermediateTotal * (promoDiscountPercent / 100);
+      const finalPrice = Math.max(intermediateTotal - promoDiscountValue, 0);
+      document.getElementById('totalPrice').textContent = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('discountPercent').textContent = discountPercent.toFixed(2);
+      document.getElementById('discountValue').textContent = discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('promoDiscountPercent').textContent = promoDiscountPercent.toFixed(2);
+      document.getElementById('promoDiscountValue').textContent = promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('finalPrice').textContent = finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function applyDiscount() {
+      if (validateDiscountInput('discountInput', 'discountInputError')) {
+        updateTotal();
+      }
+    }
+
+    function applyPromoDiscount() {
+      if (validateDiscountInput('promoDiscountInput', 'promoDiscountInputError') && validatePromoDates()) {
+        updateTotal();
+      }
+    }
+
+    function escapeHTML(str) {
+      const htmlEntities = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      };
+      return str.replace(/[&<>"']/g, match => htmlEntities[match]);
+    }
+
+    function saveChanges() {
+      alert('Alterações salvas com sucesso no banco de dados!');
+    }
+
+    function printSummary() {
+      const cpfInput = document.getElementById('cpfInput').value;
+      if (cpfInput && !validateCPF(cpfInput)) {
+        document.getElementById('cpfError').style.display = 'block';
+        document.getElementById('cpfInput').classList.add('error');
+        return;
+      } else {
+        document.getElementById('cpfError').style.display = 'none';
+        document.getElementById('cpfInput').classList.remove('error');
+      }
+
+      if (selectedExams.length === 0) {
+        alert('Selecione pelo menos um exame antes de imprimir.');
+        return;
+      }
+      if (!validatePhone() && document.getElementById('telefoneInput').value !== '') {
+        alert('Corrija o número de telefone antes de imprimir.');
+        return;
+      }
+      if (document.getElementById('enablePromoDiscount').checked && !validatePromoDates()) {
+        alert('Corrija as datas promocionais antes de imprimir.');
+        return;
+      }
+
+      const total = parseFloat(document.getElementById('totalPrice').textContent.replace(/\./g, '').replace(',', '.'));
+      const discountPercent = parseFloat(document.getElementById('discountPercent').textContent);
+      const discountValue = parseFloat(document.getElementById('discountValue').textContent.replace(/\./g, '').replace(',', '.'));
+      const promoDiscountPercent = parseFloat(document.getElementById('promoDiscountPercent').textContent);
+      const promoDiscountValue = parseFloat(document.getElementById('promoDiscountValue').textContent.replace(/\./g, '').replace(',', '.'));
+      const finalPrice = parseFloat(document.getElementById('finalPrice').textContent.replace(/\./g, '').replace(',', '.'));
+      const responsible = escapeHTML(document.getElementById('responsibleInput').value || 'Não informado');
+      const solicitante = escapeHTML(document.getElementById('solicitanteInput').value || 'Não informado');
+      const telefone = escapeHTML(document.getElementById('telefoneInput').value || 'Não informado');
+      const promoTypeValue = document.getElementById('promoType').value;
+      const promoType = promoTypeValue === 'Outros' ? escapeHTML(document.getElementById('otherPromoInput').value || 'Não informado') : escapeHTML(promoTypeValue || 'Não informado');
+      const promoStartDateRaw = document.getElementById('promoStartDate').value;
+      const promoEndDateRaw = document.getElementById('promoEndDate').value;
+      const promoStartDate = formatDate(promoStartDateRaw);
+      const promoEndDate = formatDate(promoEndDateRaw);
+      const isIndustryDiscountApplied = document.getElementById('enableIndustryDiscount').checked && discountPercent > 0;
+      const isPromoDiscountApplied = document.getElementById('enablePromoDiscount').checked && promoDiscountPercent > 0;
+      const currentYear = new Date().getFullYear();
+      const isPromoValid = isPromoDiscountApplied &&
+                           promoStartDate !== 'Não informado' &&
+                           promoEndDate !== 'Não informado' &&
+                           new Date(promoEndDateRaw) >= new Date(promoStartDateRaw);
+      const printType = document.getElementById('printType').value;
+
+      let printContent;
+
+      if (printType === 'thermal') {
+        printContent = `
+          <html>
+          <head>
+            <title>Resumo de Exames</title>
+            <style>
+              @page {
+                margin: 0;
+              }
+              body {
+                font-family: monospace;
+                font-size: 10pt;
+                margin: 0;
+                padding: 0 5mm 5mm 0;
+                width: 80mm;
+                line-height: 1.2;
+                color: #000;
+                background: #fff;
+                text-align: left;
+              }
+              .line { margin-bottom: 0.3em; }
+              .divider { border-top: 1px dashed #000; margin: 0.5em 0; }
+              .center { text-align: center; }
+              .bold { font-weight: bold; }
+              .warning {
+                margin: 0.5em 0;
+                font-size: 9pt;
+                text-align: center;
+              }
+              .warning-title { font-weight: bold; text-align: center; }
+            </style>
+          </head>
+          <body>
+            <div class="center bold">
+              <p>SERVIÇO SOCIAL DA INDÚSTRIA</p>
+              <p>CNPJ: 03.910.210/0025-82</p>
+              <p>ORÇAMENTO DE EXAMES</p>
+            </div>
+            <div class="divider"></div>
+            <div class="line">Gerado em: ${new Date().toLocaleString('pt-BR')}</div>
+            <div class="line">Responsável pelo Orçamento: ${responsible}</div>
+            <div class="line">Solicitante: ${solicitante}</div>
+            <div class="line">Telefone do Solicitante: ${telefone}</div>
+            ${cpfInput ? `<div class="line">CPF do Solicitante: ${cpfInput}</div>` : ''}
+            <div class="divider"></div>
+            <div class="center bold">Exames Selecionados</div>
+            ${selectedExams.length === 0 ? `
+              <div class="line center">Nenhum exame selecionado</div>
+            ` : selectedExams.map(exam => `
+              <div class="line">${exam.name.substring(0, 40)}</div>
+              <div class="price">R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            `).join('')}
+            <div class="divider"></div>
+            <div class="line">Valor Total: R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            ${isIndustryDiscountApplied ? `
+              <div class="line">Desconto Indústria: R$ ${discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            ` : ''}
+            ${isPromoDiscountApplied ? `
+              <div class="line">Desconto Promocional: R$ ${promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            ` : ''}
+            <div class="line bold">Total do Pagamento: R$ ${finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            ${isPromoDiscountApplied ? `
+              <div class="divider"></div>
+              <div class="line">Promoção: ${promoType}</div>
+              ${isPromoValid ? `
+                <div class="line">Vigência: ${promoStartDate} a ${promoEndDate}</div>
+              ` : `
+                <div class="line">Promoção: Datas inválidas. Verifique.</div>
+              `}
+            ` : ''}
+            <div class="divider"></div>
+            <div class="warning">
+              <div class="warning-title">AVISO IMPORTANTE</div>
+              <div class="line">Ao solicitar este orçamento, o cliente autoriza o uso de dados pessoais (nome, telefone, CPF) para esta finalidade.</div>
+              <div class="line">Orçamento válido até ${currentYear}. Valores podem ser ajustados por promoções ou atualizações.</div>
+              ${isPromoValid ? `
+                <div class="line">Promoção válida de ${promoStartDate} a ${promoEndDate}.</div>
+              ` : ''}
+            </div>
+            <div class="divider"></div>
+            <div class="line">Endereço: Rua Frei Cassiano, 88</div>
+            <div class="line">Santo Amaro, Recife - PE</div>
+            <div class="line">Data: ${new Date().toLocaleString('pt-BR')}</div>
+          </body>
+          </html>
+        `;
+      } else {
+        printContent = `
+          <html>
+          <head>
+            <title>Resumo de Exames</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <style>
+              @media print { .no-print { display: none; } @page { margin: 2cm; } .btn-primary { display: none; } }
+              body { font-family: 'Inter', sans-serif; color: #111827; background: white; margin: 0; padding: 2rem; }
+              .print-container { max-width: 800px; margin: 0 auto; padding: 1.5rem; border: 1px solid #e5e7eb; border-radius: 0.75rem; background: #ffffff; }
+              .print-header { margin-bottom: 2rem; border-bottom: 2px solid #2563eb; padding-bottom: 1rem; }
+              .print-header .header-container { display: flex; align-items: center; justify-content: space-between; }
+              .print-header .logo-container img { max-width: 120px; height: auto; }
+              .print-header .title-container { flex: 1; text-align: center; }
+              .print-header h1 { font-size: 1.5rem; color: #111827; margin: 0; }
+              .print-header p { color: #555; font-size: 0.875rem; margin: 0.5rem 0; }
+              .print-exams-section { margin-bottom: 2rem; }
+              .print-exams-section h2 { font-size: 1.25rem; margin-bottom: 1rem; text-align: center; color: #2563eb; }
+              .print-table { width: 100%; border-collapse: collapse; }
+              .print-table th { background: #2563eb; color: white; padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.875rem; }
+              .print-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 0.875rem; }
+              .print-table tr:hover { background: #f3f4f6; }
+              .print-summary { background: #f0f7ff; padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem; }
+              .print-summary p { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; margin: 0.5rem 0; }
+              .print-summary .final-price { font-size: 1.25rem; font-weight: 600; color: #2563eb; }
+              .print-warning { background: #fef2f2; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border: 1px solid #ef4444; color: #111827; font-size: 0.875rem; }
+              .print-warning i { margin-right: 0.5rem; color: #ef4444; }
+              .print-footer { text-align: center; color: #555; font-size: 0.875rem; margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1rem; }
+              @media (max-width: 640px) {
+                .print-table { display: block; }
+                .print-table thead { display: none; }
+                .print-table tbody, .print-table tr { display: block; }
+                .print-table td { display: block; text-align: left; padding: 0.5rem; border-bottom: none; }
+                .print-table td:before { content: attr(data-label); font-weight: bold; display: inline-block; width: 100%; margin-bottom: 0.2rem; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="print-container">
+              <div class="print-header">
+                <div class="header-container">
+                  <div class="logo-container">
+                    <img src="img/sesi.jpg" alt="SESI Logo">
+                  </div>
+                  <div class="title-container">
+                    <h1>Orçamento de Exames e Especialidades</h1>
+                  </div>
+                  <div class="logo-container">
+                    <img src="img/melhoria.jpg" alt="Melhoria Logo">
+                  </div>
+                </div>
+                <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+                <p>Responsável pelo Orçamento: ${responsible}</p>
+                <p>Solicitante: ${solicitante} ${cpfInput ? `(CPF do Solicitante: ${cpfInput})` : ''}</p>
+                <p>Telefone do Solicitante: ${telefone}</p>
+              </div>
+              <div class="print-exams-section">
+                <h2>Exames Selecionados</h2>
+                <table class="print-table">
+                  <thead>
+                    <tr>
+                      <th>Exame</th>
+                      <th>R$</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${selectedExams.length === 0 ? `
+                      <tr>
+                        <td colspan="2" style="text-align: center; color: #6b7280;">Nenhum exame selecionado</td>
+                      </tr>
+                    ` : selectedExams.map(exam => `
+                      <tr>
+                        <td data-label="Exame">${escapeHTML(exam.name)}</td>
+                        <td data-label="Preço">R$ ${exam.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <div class="print-summary">
+                <p><i class="fas fa-money-bill-wave"></i> Valor Total: R$ <span>${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
+                ${isIndustryDiscountApplied ? `<p><i class="fas fa-percentage"></i> Desconto Indústria: R$ <span>${discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (<span>${discountPercent.toFixed(2)}</span>%)</p>` : ''}
+                ${isPromoDiscountApplied ? `<p><i class="fas fa-star"></i> Desconto Promocional: R$ <span>${promoDiscountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (<span>${promoDiscountPercent.toFixed(2)}</span>%)</p>` : ''}
+                <p class="final-price"><i class="fas fa-wallet"></i> Total do Pagamento: R$ <span>${finalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
+                ${isPromoDiscountApplied ? `
+                  <p><i class="fas fa-tag"></i> Tipo de Promoção: <span>${promoType}</span></p>
+                  ${isPromoValid ? `
+                    <p><i class="fas fa-calendar-alt"></i> Início da Promoção: <span>${promoStartDate}</span></p>
+                    <p><i class="fas fa-calendar-alt"></i> Término da Promoção: <span>${promoEndDate}</span></p>
+                    <p><i class="fas fa-info-circle"></i> Vigência da Promoção: <span>Os descontos promocionais são válidos apenas dentro do período especificado (${promoStartDate} a ${promoEndDate}).</span></p>
+                  ` : `
+                    <p><i class="fas fa-exclamation-circle"></i> Promoção: <span>Datas de promoção inválidas ou não informadas. O desconto promocional será aplicado, mas verifique as datas.</span></p>
+                  `}
+                ` : ''}
+              </div>
+              <div class="print-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>AVISO IMPORTANTE</strong><br>
+                <p>Ao solicitar o orçamento de exames laboratoriais e especialidades médicas, o cliente declara expressamente que autoriza o tratamento dos dados pessoais de nome, telefone e CPF, para essa finalidade específica.</p>
+                <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o cliente será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p>
+              </div>
+              <div class="print-footer">
+                <p>Endereço: <a href="https://www.google.com/maps/place/Rua+Frei+Cassimiro,+88,+Santo+Amaro,+Recife,+PE,+50100-260" target="_blank">Rua Frei Cassimiro, 88 - Santo Amaro, Recife - PE, 50100-260</a></p>
+                <p>Data: ${new Date().toLocaleString('pt-BR')}</p>
+              </div>
+              <button id="printButtonWindow" class="btn-primary no-print"><i class="fas fa-print mr-2"></i> Imprimir</button>
+            </div>
+          </body>
+          </html>
+        `;
+      }
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Não foi possível abrir a janela de impressão. Verifique as configurações de pop-ups do seu navegador.');
+        return;
+      }
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.document.getElementById('printButtonWindow')?.addEventListener('click', () => printWindow.print());
+    }
+
+    function handleLogin() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const loginError = document.getElementById('loginError');
+
+      if (username === 'SESI' && password === 'sistema@2025') {
+        loginError.style.display = 'none';
+        document.getElementById('priceManagement').classList.add('active');
+        document.querySelector('.modal-content .form-group').style.display = 'none';
+        document.querySelector('.modal-content .button-container').style.display = 'none';
+        document.querySelector('.modal-content h2').textContent = 'Gerenciamento de Preços';
+        renderPriceManagementList();
+      } else {
+        loginError.style.display = 'block';
+      }
+    }
+
+    function handleAddExam() {
+      const name = document.getElementById('newExamName').value.trim();
+      const price = parseFloat(document.getElementById('newExamPrice').value);
+      if (name && !isNaN(price) && price > 0) {
+        try {
+          const stmt = db.prepare("INSERT INTO exams (name, price) VALUES (?, ?)");
+          stmt.run([name, price]);
+          stmt.free();
+          document.getElementById('newExamName').value = '';
+          document.getElementById('newExamPrice').value = '';
+          renderPriceManagementList();
+          renderExamCheckboxes(document.querySelector('#examSearch').value);
+        } catch (error) {
+          console.error('Erro ao adicionar exame:', error);
+          alert('Falha ao adicionar o exame. Verifique se o nome já existe.');
+        }
+      } else {
+        alert('Por favor, insira um nome válido e um preço maior que zero.');
+      }
+    }
+
+    function handleExcelUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
+
+            if (jsonData.length < 1 || !jsonData[0].includes('name') || !jsonData[0].includes('price')) {
+              throw new Error('Formato inválido: o arquivo deve conter as colunas "name" e "price".');
+            }
+
+            const newExams = jsonData
+              .slice(1)
+              .filter(row => row[0] && !isNaN(parseFloat(row[1])))
+              .map(row => ({
+                name: String(row[0]).trim(),
+                price: parseFloat(row[1])
+              }))
+              .filter(exam => exam.name && exam.price > 0);
+
+            if (newExams.length > 0) {
+              db.run("DELETE FROM exams");
+              const stmt = db.prepare("INSERT INTO exams (name, price) VALUES (?, ?)");
+              newExams.forEach(exam => {
+                stmt.run([exam.name, exam.price]);
+              });
+              stmt.free();
+              renderPriceManagementList();
+              renderExamCheckboxes(document.querySelector('#examSearch').value);
+              selectedExams = selectedExams.filter(exam => newExams.some(e => e.name === exam.name));
+              renderSelectedExams();
+              alert('Tabela de preços atualizada com sucesso!');
+            } else {
+              alert('Nenhum exame válido encontrado no arquivo Excel.');
+            }
+          } catch (error) {
+            console.error('Erro ao processar o arquivo Excel:', error);
+            alert(`Erro ao processar o arquivo Excel: ${error.message}`);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    }
+
+    let debounceTimeout;
+    document.getElementById('examSearch').addEventListener('input', (e) => {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => {
+        renderExamCheckboxes(e.target.value.trim());
+      }, 300);
+    });
+
+    document.getElementById('discountToggle').addEventListener('click', () => {
+      document.getElementById('discountSection').classList.toggle('active');
+    });
+
+    document.getElementById('enableIndustryDiscount').addEventListener('change', (e) => {
+      document.getElementById('discountInput').disabled = !e.target.checked;
+      validateDiscountInput('discountInput', 'discountInputError');
+      updateTotal();
+    });
+
+    document.getElementById('enablePromoDiscount').addEventListener('change', (e) => {
+      const isChecked = e.target.checked;
+      document.getElementById('promoDiscountInput').disabled = !isChecked;
+      document.getElementById('promoType').disabled = !isChecked;
+      document.getElementById('promoStartDate').disabled = !isChecked;
+      document.getElementById('promoEndDate').disabled = !isChecked;
+      document.getElementById('otherPromoInput').disabled = !isChecked;
+      document.getElementById('promoDetails').classList.toggle('active', isChecked);
+      const promoType = document.getElementById('promoType').value;
+      document.getElementById('otherPromoContainer').style.display = (isChecked && promoType === 'Outros') ? 'block' : 'none';
+      document.getElementById('promoStartDateError').style.display = 'none';
+      document.getElementById('promoEndDateError').style.display = 'none';
+      document.getElementById('promoStartDate').classList.remove('error');
+      document.getElementById('promoEndDate').classList.remove('error');
+      validateDiscountInput('promoDiscountInput', 'promoDiscountInputError');
+      updateTotal();
+    });
+
+    document.getElementById('promoType').addEventListener('change', (e) => {
+      const isPromoEnabled = document.getElementById('enablePromoDiscount').checked;
+      document.getElementById('otherPromoContainer').style.display = (isPromoEnabled && e.target.value === 'Outros') ? 'block' : 'none';
+    });
+
+    document.getElementById('discountInput').addEventListener('input', () => validateDiscountInput('discountInput', 'discountInputError'));
+    document.getElementById('promoDiscountInput').addEventListener('input', () => validateDiscountInput('promoDiscountInput', 'promoDiscountInputError'));
+    document.getElementById('applyDiscount').addEventListener('click', applyDiscount);
+    document.getElementById('applyPromoDiscount').addEventListener('click', applyPromoDiscount);
+    document.getElementById('clearSelection').addEventListener('click', () => {
+      selectedExams = [];
+      document.getElementById('solicitanteInput').value = '';
+      document.getElementById('telefoneInput').value = '';
+      document.getElementById('cpfInput').value = '';
+      renderSelectedExams();
+      renderExamCheckboxes(document.querySelector('#examSearch').value);
+      updateTotal();
+    });
+
+    document.getElementById('printButton').addEventListener('click', printSummary);
+    document.getElementById('telefoneInput').addEventListener('input', validatePhone);
+    document.getElementById('promoStartDate').addEventListener('change', validatePromoDates);
+    document.getElementById('promoEndDate').addEventListener('change', validatePromoDates);
+    document.getElementById('cpfInput').addEventListener('input', () =>{
+const cpfInput = document.getElementById('cpfInput');
+const cpfError = document.getElementById('cpfError');
+const cpfPattern = /^\d{11}$/;
+if (!cpfPattern.test(cpfInput.value.replace(/\D/g, '')) && cpfInput.value !== '') {
+cpfInput.classList.add('error');
+cpfError.style.display = 'block';
+} else {
+cpfInput.classList.remove('error');
+cpfError.style.display = 'none';
 }
-
-let debounceTimeout;
-document.getElementById('examSearch').addEventListener('input', (e) => {
-  clearTimeout(debounceTimeout);
-  debounceTimeout = setTimeout(() => {
-    renderExamCheckboxes(e.target.value.trim());
-  }, 300);
-});
-
-document.getElementById('discountToggle').addEventListener('click', () => {
-  document.getElementById('discountSection').classList.toggle('active');
-});
-
-document.getElementById('enableIndustryDiscount').addEventListener('change', (e) => {
-  document.getElementById('discountInput').disabled = !e.target.checked;
-  validateDiscountInput('discountInput', 'discountInputError');
-  updateTotal();
-});
-
-document.getElementById('enablePromoDiscount').addEventListener('change', (e) => {
-  const isChecked = e.target.checked;
-  document.getElementById('promoDiscountInput').disabled = !isChecked;
-  document.getElementById('promoType').disabled = !isChecked;
-  document.getElementById('promoStartDate').disabled = !isChecked;
-  document.getElementById('promoEndDate').disabled = !isChecked;
-  document.getElementById('otherPromoInput').disabled = !isChecked;
-  document.getElementById('promoDetails').classList.toggle('active', isChecked);
-  const promoType = document.getElementById('promoType').value;
-  document.getElementById('otherPromoContainer').style.display = (isChecked && promoType === 'Outros') ? 'block' : 'none';
-  document.getElementById('promoStartDateError').style.display = 'none';
-  document.getElementById('promoEndDateError').style.display = 'none';
-  document.getElementById('promoStartDate').classList.remove('error');
-  document.getElementById('promoEndDate').classList.remove('error');
-  validateDiscountInput('promoDiscountInput', 'promoDiscountInputError');
-  updateTotal();
-});
-
-document.getElementById('promoType').addEventListener('change', (e) => {
-  const isPromoEnabled = document.getElementById('enablePromoDiscount').checked;
-  document.getElementById('otherPromoContainer').style.display = (isPromoEnabled && e.target.value === 'Outros') ? 'block' : 'none';
-});
-
-document.getElementById('discountInput').addEventListener('input', () => validateDiscountInput('discountInput', 'discountInputError'));
-document.getElementById('promoDiscountInput').addEventListener('input', () => validateDiscountInput('promoDiscountInput', 'promoDiscountInputError'));
-document.getElementById('applyDiscount').addEventListener('click', applyDiscount);
-document.getElementById('applyPromoDiscount').addEventListener('click', applyPromoDiscount);
-document.getElementById('clearSelection').addEventListener('click', () => {
-  selectedExams = [];
-  document.getElementById('solicitanteInput').value = '';
-  document.getElementById('telefoneInput').value = '';
-  document.getElementById('cpfInput').value = '';
-  renderSelectedExams();
-  renderExamCheckboxes(document.querySelector('#examSearch').value);
-  updateTotal();
-});
-
-document.getElementById('printButton').addEventListener('click', printSummary);
-document.getElementById('telefoneInput').addEventListener('input', validatePhone);
-document.getElementById('promoStartDate').addEventListener('change', validatePromoDates);
-document.getElementById('promoEndDate').addEventListener('change', validatePromoDates);
-document.getElementById('cpfInput').addEventListener('input', () => {
-  const cpfInput = document.getElementById('cpfInput');
-  if (cpfInput.value && !validateCPF(cpfInput.value)) {
-    document.getElementById('cpfError').style.display = 'block';
-    cpfInput.classList.add('error');
-  } else {
-    document.getElementById('cpfError').style.display = 'none';
-    cpfInput.classList.remove('error');
-  }
 });
 
 document.getElementById('updateTableButton').addEventListener('click', () => {
-  document.getElementById('loginModal').classList.add('active');
-  document.getElementById('username').value = '';
-  document.getElementById('password').value = '';
-  document.getElementById('loginError').style.display = 'none';
-  document.getElementById('priceManagement').classList.remove('active');
-  document.querySelector('.modal-content .form-group').style.display = 'block';
-  document.querySelector('.modal-content .button-container').style.display = 'flex';
-  document.querySelector('.modal-content h2').textContent = 'Autenticação';
+document.getElementById('loginModal').classList.add('active');
 });
 
-document.querySelector('.modal .close').addEventListener('click', () => {
-  document.getElementById('loginModal').classList.remove('active');
+document.querySelector('#loginModal .close').addEventListener('click', () => {
+document.getElementById('loginModal').classList.remove('active');
+document.getElementById('username').value = '';
+document.getElementById('password').value = '';
+document.getElementById('loginError').style.display = 'none';
+document.getElementById('priceManagement').classList.remove('active');
+document.querySelector('.modal-content .form-group').style.display = 'block';
+document.querySelector('.modal-content .button-container').style.display = 'flex';
+document.querySelector('.modal-content h2').textContent = 'Autenticação';
 });
 
 document.getElementById('loginButton').addEventListener('click', handleLogin);
 document.getElementById('addExamButton').addEventListener('click', handleAddExam);
-document.getElementById('uploadExcelButton').addEventListener('click', () => {
-  document.getElementById('excelUpload').click();
-});
-document.getElementById('excelUpload').addEventListener('change', handleExcelUpload);
 document.getElementById('saveButton').addEventListener('click', saveChanges);
+document.getElementById('excelUpload').addEventListener('change', handleExcelUpload);
 
-initDatabase().then(() => {
-  renderSelectedExams();
-  renderExamCheckboxes();
-});
+async function initialize() {
+await initDatabase();
+if (db) {
+renderExamCheckboxes();
+renderSelectedExams();
+}
+}
+
+initialize();
   </script>
 </body>
 </html>
