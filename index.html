@@ -538,27 +538,26 @@
         display: none;
       }
       .cpf-container {
-  max-width: 16rem;
-}
-
-.delete-exam-btn {
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-  display: inline-flex;
-  align-items: center;
-}
-.delete-exam-btn:hover {
-  background-color: #dc2626;
-}
-.action-cell {
-  text-align: center;
-  width: 60px;
-}
+        max-width: 16rem;
+      }
+      .delete-exam-btn {
+        background-color: #ef4444;
+        color: white;
+        border: none;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+      }
+      .delete-exam-btn:hover {
+        background-color: #dc2626;
+      }
+      .action-cell {
+        text-align: center;
+        width: 60px;
+      }
     }
   </style>
 </head>
@@ -661,8 +660,8 @@
       </div>
     </div>
     <div class="card">
-      <button id="discountToggle" class="btn-primary w-full sm:w-auto" aria-label="Adicionar desconto">
-        <i class="fas fa-percent mr-2"></i> Adicionar desconto
+      <button id="discountToggle" class="btn-primary w-full sm:w-auto" aria-label="Adicionar Desconto">
+        <i class="fas fa-percent mr-2"></i> Adicionar Desconto
       </button>
       <div id="discountSection" class="mt-4">
         <div class="discount-container">
@@ -1245,7 +1244,6 @@
   { name: "Waller Rose", price: 22.00 },
   { name: "Zika Virus-Sorologia Total - IgG", price: 254.00 },
   { name: "Zika Virus-Sorologia Total - IgM", price: 281.00 }
-      
     ];
 
     let db;
@@ -1556,7 +1554,7 @@
       document.getElementById('promoEndDate').disabled = true;
       document.getElementById('otherPromoContainer').style.display = 'none';
       document.getElementById('promoDetails').classList.remove('active');
-      document.getElementById('responsibleInput').value = '';
+      document.getElementById('discountSection').classList.remove('active');
       document.getElementById('solicitanteInput').value = '';
       document.getElementById('telefoneInput').value = '';
       document.getElementById('cpfInput').value = '';
@@ -1611,16 +1609,16 @@
       }
     }
 
-    function escapeHTML(str) {
-      const htmlEntities = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      };
-      return str.replace(/[&<>"']/g, match => htmlEntities[match]);
-    }
+function escapeHTML(str) {
+  const htmlEntities = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  };
+  return str.replace(/[&<>"']/g, match => htmlEntities[match]);
+}
 
     function saveChanges() {
       alert('Alterações salvas com sucesso no banco de dados!');
@@ -2016,62 +2014,56 @@
     document.getElementById('promoDiscountInput').addEventListener('input', () => validateDiscountInput('promoDiscountInput', 'promoDiscountInputError'));
     document.getElementById('applyDiscount').addEventListener('click', applyDiscount);
     document.getElementById('applyPromoDiscount').addEventListener('click', applyPromoDiscount);
-    document.getElementById('clearSelection').addEventListener('click', () => {
-      selectedExams = [];
-      document.getElementById('solicitanteInput').value = '';
-      document.getElementById('telefoneInput').value = '';
-      document.getElementById('cpfInput').value = '';
-      renderSelectedExams();
-      renderExamCheckboxes(document.querySelector('#examSearch').value);
-      updateTotal();
-    });
+    document.getElementById('clearSelection').addEventListener('click', clearSelections);
 
     document.getElementById('printButton').addEventListener('click', printSummary);
     document.getElementById('telefoneInput').addEventListener('input', validatePhone);
     document.getElementById('promoStartDate').addEventListener('change', validatePromoDates);
     document.getElementById('promoEndDate').addEventListener('change', validatePromoDates);
-    document.getElementById('cpfInput').addEventListener('input', () =>{
-const cpfInput = document.getElementById('cpfInput');
-const cpfError = document.getElementById('cpfError');
-const cpfPattern = /^\d{11}$/;
-if (!cpfPattern.test(cpfInput.value.replace(/\D/g, '')) && cpfInput.value !== '') {
-cpfInput.classList.add('error');
-cpfError.style.display = 'block';
-} else {
-cpfInput.classList.remove('error');
-cpfError.style.display = 'none';
-}
-});
+    document.getElementById('cpfInput').addEventListener('input', () => {
+      const cpfInput = document.getElementById('cpfInput');
+      const cpfError = document.getElementById('cpfError');
+      const cpfPattern = /^\d{11}$/;
+      if (!cpfPattern.test(cpfInput.value.replace(/\D/g, '')) && cpfInput.value !== '') {
+        cpfInput.classList.add('error');
+        cpfError.style.display = 'block';
+        } else {
+            cpfInput.classList.remove('error');
+            cpfError.style.display = 'none';
+        }
+    });
 
-document.getElementById('updateTableButton').addEventListener('click', () => {
-document.getElementById('loginModal').classList.add('active');
-});
+    document.getElementById('updateTableButton').addEventListener('click', () => {
+        document.getElementById('loginModal').classList.add('active');
+    });
 
-document.querySelector('#loginModal .close').addEventListener('click', () => {
-document.getElementById('loginModal').classList.remove('active');
-document.getElementById('username').value = '';
-document.getElementById('password').value = '';
-document.getElementById('loginError').style.display = 'none';
-document.getElementById('priceManagement').classList.remove('active');
-document.querySelector('.modal-content .form-group').style.display = 'block';
-document.querySelector('.modal-content .button-container').style.display = 'flex';
-document.querySelector('.modal-content h2').textContent = 'Autenticação';
-});
+    document.getElementById('loginButton').addEventListener('click', handleLogin);
 
-document.getElementById('loginButton').addEventListener('click', handleLogin);
-document.getElementById('addExamButton').addEventListener('click', handleAddExam);
-document.getElementById('saveButton').addEventListener('click', saveChanges);
-document.getElementById('excelUpload').addEventListener('change', handleExcelUpload);
+    document.querySelector('.close').addEventListener('click', () => {
+        document.getElementById('loginModal').classList.remove('active');
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('loginError').style.display = 'none';
+        document.getElementById('priceManagement').classList.remove('active');
+        document.querySelector('.modal-content .form-group').style.display = 'block';
+        document.querySelector('.modal-content .button-container').style.display = 'block';
+        document.querySelector('.modal-content h2').textContent = 'Autenticação';
+    });
 
-async function initialize() {
-await initDatabase();
-if (db) {
-renderExamCheckboxes();
-renderSelectedExams();
-}
-}
+    document.getElementById('addExamButton').addEventListener('click', handleAddExam);
 
-initialize();
-  </script>
+    document.getElementById('excelUpload').addEventListener('change', handleExcelUpload);
+
+    document.getElementById('saveButton').addEventListener('click', saveChanges);
+
+    async function initializeApp() {
+        await initDatabase();
+        if (db) {
+            renderExamCheckboxes();
+            renderSelectedExams();
+        }
+    }
+    initializeApp();
+</script>
 </body>
 </html>
