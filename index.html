@@ -1747,8 +1747,9 @@ function escapeHTML(str) {
             <div class="divider"></div>
             <div class="warning">
               <div class="warning-title">AVISO IMPORTANTE</div>
-              <div class="line">Ao solicitar este orçamento, o cliente autoriza o uso de dados pessoais (nome, telefone, CPF) para esta finalidade.</div>
-              <div class="line">Orçamento válido até ${currentYear}. Valores podem ser ajustados por promoções ou atualizações.</div>
+              <div class="line"><p>Ao solicitar este orçamento, o cliente autoriza o uso de dados pessoais (nome, telefone, CPF) para esta finalidade.</p>
+                                <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o cliente será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p></div>
+              <div class="line"> </div>
               ${isPromoValid ? `
                 <div class="line">Promoção válida de ${promoStartDate} a ${promoEndDate}.</div>
               ` : ''}
