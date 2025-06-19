@@ -637,7 +637,7 @@
           </div>
           <div class="cpf-container">
             <label for="cpfInput">CPF do Solicitante</label>
-            <input type="text" id="cpfInput" class="custom-input" placeholder="CPF do solicitante" aria-label="Digite o CPF do Cliente (11 dígitos)" pattern="\d{11}">
+            <input type="text" id="cpfInput" class="custom-input" placeholder="CPF do solicitante" aria-label="Digite o CPF do solicitante (11 dígitos)" pattern="\d{11}">
             <i class="fas fa-id-card"></i>
             <div id="cpfError" class="error-message">Digite um CPF válido</div>
           </div>
@@ -1747,8 +1747,8 @@ function escapeHTML(str) {
             <div class="divider"></div>
             <div class="warning">
               <div class="warning-title">AVISO IMPORTANTE</div>
-              <div class="line"><p>Ao solicitar este orçamento, o cliente autoriza o uso de dados pessoais (nome, telefone, CPF) para esta finalidade.</p>
-                                <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o cliente será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p></div>
+              <div class="line"><p>Ao solicitar este orçamento, o  autoriza o uso de dados pessoais (nome, telefone, CPF) para esta finalidade.</p>
+                                <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o  será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p></div>
               <div class="line"> </div>
               ${isPromoValid ? `
                 <div class="line">Promoção válida de ${promoStartDate} a ${promoEndDate}.</div>
@@ -1859,8 +1859,8 @@ function escapeHTML(str) {
               <div class="print-warning">
                 <i class="fas fa-exclamation-triangle"></i>
                 <strong>AVISO IMPORTANTE</strong><br>
-                <p>Ao solicitar o orçamento de exames laboratoriais e especialidades médicas, o cliente declara expressamente que autoriza o tratamento dos dados pessoais de nome, telefone e CPF, para essa finalidade específica.</p>
-                <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o cliente será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p>
+                <p>Ao solicitar o orçamento de exames laboratoriais e especialidades médicas, o  declara expressamente que autoriza o tratamento dos dados pessoais de nome, telefone e CPF, para essa finalidade específica.</p>
+                <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o  será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p>
               </div>
               <div class="print-footer">
                 <p>Endereço: <a href="https://www.google.com/maps/place/Rua+Frei+Cassimiro,+88,+Santo+Amaro,+Recife,+PE,+50100-260" target="_blank">Rua Frei Cassimiro, 88 - Santo Amaro, Recife - PE, 50100-260</a></p>
