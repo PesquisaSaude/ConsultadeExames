@@ -671,7 +671,7 @@
           <div class="search-container mx-auto">
             <input type="number" id="discountInput" min="0" max="70" step="0.01" placeholder="Ex.: 10,00" class="custom-input discount-input" aria-label="Desconto percentual da indústria" disabled>
             <i class="fas fa-percent"></i>
-            <div id="discountInputError" class="error-message">Digite um valor em %</div>
+            <div id="discountInputError" class="error-message">Digite um valor entre 0 e 70%</div>
           </div>
         </div>
         <div class="discount-container">
@@ -681,7 +681,7 @@
           <div class="search-container mx-auto">
             <input type="number" id="promoDiscountInput" min="0" max="25" step="0.01" placeholder="Ex.: 0,00" class="custom-input discount-input" aria-label="Desconto percentual da promoção" disabled>
             <i class="fas fa-star"></i>
-            <div id="promoDiscountInputError" class="error-message">Digite um valor em%</div>
+            <div id="promoDiscountInputError" class="error-message">Digite um valor entre 0 e 25%</div>
           </div>
           <div id="promoDetails" class="promo-details">
             <div class="search-container">
@@ -1555,7 +1555,7 @@
       document.getElementById('otherPromoContainer').style.display = 'none';
       document.getElementById('promoDetails').classList.remove('active');
       document.getElementById('discountSection').classList.remove('active');
-      document.getElementById('Input').value = '';
+      document.getElementById('solicitanteInput').value = '';
       document.getElementById('telefoneInput').value = '';
       document.getElementById('cpfInput').value = '';
       document.querySelector('#printType').value = 'standard';
@@ -1655,7 +1655,7 @@ function escapeHTML(str) {
       const promoDiscountValue = parseFloat(document.getElementById('promoDiscountValue').textContent.replace(/\./g, '').replace(',', '.'));
       const finalPrice = parseFloat(document.getElementById('finalPrice').textContent.replace(/\./g, '').replace(',', '.'));
       const responsible = escapeHTML(document.getElementById('responsibleInput').value || 'Não informado');
-      const  = escapeHTML(document.getElementById('Input').value || 'Não informado');
+      const solicitante = escapeHTML(document.getElementById('solicitanteInput').value || 'Não informado');
       const telefone = escapeHTML(document.getElementById('telefoneInput').value || 'Não informado');
       const promoTypeValue = document.getElementById('promoType').value;
       const promoType = promoTypeValue === 'Outros' ? escapeHTML(document.getElementById('otherPromoInput').value || 'Não informado') : escapeHTML(promoTypeValue || 'Não informado');
@@ -1715,7 +1715,7 @@ function escapeHTML(str) {
             <div class="divider"></div>
             <div class="line">Gerado em: ${new Date().toLocaleString('pt-BR')}</div>
             <div class="line">Responsável pelo Orçamento: ${responsible}</div>
-            <div class="line">: ${}</div>
+            <div class="line">Solicitante: ${solicitante}</div>
             <div class="line">Telefone do Solicitante: ${telefone}</div>
             ${cpfInput ? `<div class="line">CPF do Solicitante: ${cpfInput}</div>` : ''}
             <div class="divider"></div>
@@ -1747,8 +1747,8 @@ function escapeHTML(str) {
             <div class="divider"></div>
             <div class="warning">
               <div class="warning-title">AVISO IMPORTANTE</div>
-              <div class="line"><p>Ao solicitar este orçamento, o  autoriza o uso de dados pessoais (nome, telefone, CPF) para esta finalidade.</p>
-                                <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o  será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p></div>
+              <div class="line"><p>Ao solicitar este orçamento, o cliente autoriza o uso de dados pessoais (nome, telefone, CPF) para esta finalidade.</p>
+                                <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o cliente será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p></div>
               <div class="line"> </div>
               ${isPromoValid ? `
                 <div class="line">Promoção válida de ${promoStartDate} a ${promoEndDate}.</div>
@@ -1859,8 +1859,8 @@ function escapeHTML(str) {
               <div class="print-warning">
                 <i class="fas fa-exclamation-triangle"></i>
                 <strong>AVISO IMPORTANTE</strong><br>
-                <p>Ao solicitar o orçamento de exames laboratoriais e especialidades médicas, o  declara expressamente que autoriza o tratamento dos dados pessoais de nome, telefone e CPF, para essa finalidade específica.</p>
-                <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o  será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p>
+                <p>Ao solicitar o orçamento de exames laboratoriais e especialidades médicas, o cliente declara expressamente que autoriza o tratamento dos dados pessoais de nome, telefone e CPF, para essa finalidade específica.</p>
+                <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o cliente será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p>
               </div>
               <div class="print-footer">
                 <p>Endereço: <a href="https://www.google.com/maps/place/Rua+Frei+Cassimiro,+88,+Santo+Amaro,+Recife,+PE,+50100-260" target="_blank">Rua Frei Cassimiro, 88 - Santo Amaro, Recife - PE, 50100-260</a></p>
