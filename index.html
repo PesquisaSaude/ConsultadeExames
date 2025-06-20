@@ -625,19 +625,19 @@
             <i class="fas fa-user"></i>
           </div>
           <div class="search-container solicitante-container">
-            <label for="solicitanteInput">Solicitante</label>
-            <input type="text" id="solicitanteInput" class="custom-input" placeholder="Nome solicitante" aria-label="Digite o nome do solicitante">
+            <label for="solicitanteInput">Cliente</label>
+            <input type="text" id="solicitanteInput" class="custom-input" placeholder="Nome solicitante" aria-label="Digite o nome do Cliente">
             <i class="fas fa-user"></i>
           </div>
           <div class="phone-container">
-            <label for="telefoneInput">Telefone do Solicitante</label>
+            <label for="telefoneInput">Telefone do Cliente</label>
             <input type="tel" id="telefoneInput" class="custom-input" placeholder="Contato" aria-label="Digite o número de telefone (10 ou 11 dígitos)" pattern="^\d{10,11}$">
             <i class="fas fa-phone"></i>
             <div id="phoneError" class="error-message">Digite apenas Números</div>
           </div>
           <div class="cpf-container">
-            <label for="cpfInput">CPF do Solicitante</label>
-            <input type="text" id="cpfInput" class="custom-input" placeholder="CPF do solicitante" aria-label="Digite o CPF do solicitante (11 dígitos)" pattern="\d{11}">
+            <label for="cpfInput">CPF do Cliente</label>
+            <input type="text" id="cpfInput" class="custom-input" placeholder="CPF do Cliente" aria-label="Digite o CPF" pattern="\d{11}">
             <i class="fas fa-id-card"></i>
             <div id="cpfError" class="error-message">Digite um CPF válido</div>
           </div>
@@ -1716,8 +1716,8 @@ function escapeHTML(str) {
             <div class="line">Gerado em: ${new Date().toLocaleString('pt-BR')}</div>
             <div class="line">Responsável pelo Orçamento: ${responsible}</div>
             <div class="line">Solicitante: ${solicitante}</div>
-            <div class="line">Telefone do Solicitante: ${telefone}</div>
-            ${cpfInput ? `<div class="line">CPF do Solicitante: ${cpfInput}</div>` : ''}
+            <div class="line">Telefone do Cliente: ${telefone}</div>
+            ${cpfInput ? `<div class="line">CPF do Cliente: ${cpfInput}</div>` : ''}
             <div class="divider"></div>
             <div class="center bold">Exames Selecionados</div>
             ${selectedExams.length === 0 ? `
@@ -1814,8 +1814,8 @@ function escapeHTML(str) {
                 </div>
                 <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
                 <p>Responsável pelo Orçamento: ${responsible}</p>
-                <p>Solicitante: ${solicitante} ${cpfInput ? `(CPF do Solicitante: ${cpfInput})` : ''}</p>
-                <p>Telefone do Solicitante: ${telefone}</p>
+                <p>Solicitante: ${solicitante} ${cpfInput ? `(CPF do Cliente: ${cpfInput})` : ''}</p>
+                <p>Telefone do Cliente: ${telefone}</p>
               </div>
               <div class="print-exams-section">
                 <h2>Exames Selecionados</h2>
