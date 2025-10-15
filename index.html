@@ -325,19 +325,19 @@
       margin-top: 1.5rem;
     }
     .print-controls {
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-      margin-top: 0.0rem;
-    }
-    .print-controls .search-container {
-      max-width: 240px;
-      flex: 0 0 auto;
-    }
-    .print-controls .custom-select {
-      padding: 0.75rem;
-      font-size: 1rem;
-    }
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 0.0rem;
+}
+.print-controls .search-container {
+  max-width: 265px;
+  flex: 0 0 auto;
+}
+.print-controls .custom-select {
+  padding: 0.75rem;
+  font-size: 1rem;
+}
     .discount-container {
       margin: 1rem 0;
     }
@@ -650,8 +650,17 @@
         <div class="search-container">
           <label for="printType">Tipo de Impressão</label>
           <select id="printType" class="custom-select" aria-label="Selecione o tipo de impressão">
+            <option value="standard">Selecione Impressão</option>
             <option value="standard">Impressora Padrão</option>
             <option value="thermal">Impressora Térmica</option>
+          </select>
+        </div>
+        <div class="search-container">
+          <label for="serviceUnit">Unidade de Atendimento</label>
+          <select id="serviceUnit" class="custom-select" aria-label="Selecione a unidade de atendimento">
+            <option value="selecione">Selecione Unidade</option>
+            <option value="sesi-saude">SESI Saúde</option>
+            <option value="posto-paulista">Posto Avançado SESI Paulista</option>
           </select>
         </div>
         <button id="updateTableButton" class="btn-update w-full sm:w-auto" aria-label="Atualizar tabela">
@@ -763,7 +772,7 @@
     </div>
   </div>
   <script type="text/javascript">
-    const initialExams = [
+const initialExams = [
   { name: "Abertura Coronária e Encaminhamento para Endodontia", price: 60.00 },
   { name: "Acetilcolinesterase Plasmática", price: 20.00 },
   { name: "Ácido 2 Etoxiacético", price: 949.00 },
@@ -1558,6 +1567,7 @@
       document.getElementById('solicitanteInput').value = '';
       document.getElementById('telefoneInput').value = '';
       document.getElementById('cpfInput').value = '';
+      document.getElementById('serviceUnit').value = 'sesi-saude';
       document.querySelector('#printType').value = 'standard';
       document.getElementById('totalPrice').textContent = '0,00';
       document.getElementById('discountPercent').textContent = '0';
@@ -1609,16 +1619,16 @@
       }
     }
 
-function escapeHTML(str) {
-  const htmlEntities = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  };
-  return str.replace(/[&<>"']/g, match => htmlEntities[match]);
-}
+    function escapeHTML(str) {
+      const htmlEntities = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      };
+      return str.replace(/[&<>"']/g, match => htmlEntities[match]);
+    }
 
     function saveChanges() {
       alert('Alterações salvas com sucesso no banco de dados!');
@@ -1671,6 +1681,10 @@ function escapeHTML(str) {
                            promoEndDate !== 'Não informado' &&
                            new Date(promoEndDateRaw) >= new Date(promoStartDateRaw);
       const printType = document.getElementById('printType').value;
+      const serviceUnit = document.getElementById('serviceUnit').value;
+      const address = serviceUnit === 'sesi-saude' 
+        ? 'Rua Frei Cassimiro, 88, Santo Amaro, Recife - PE, 50100-260'
+        : 'Tv. São Pedro, 2800, Artur Lundgren I, Paulista - PE, 53417-040';
 
       let printContent;
 
@@ -1745,6 +1759,9 @@ function escapeHTML(str) {
               `}
             ` : ''}
             <div class="divider"></div>
+            <div class="line">Endereço: ${address.split(', ')[0]}</div>
+            <div class="line">${address.split(', ').slice(1).join(', ')}</div>
+            <div class="line">Data: ${new Date().toLocaleString('pt-BR')}</div>
             <div class="warning">
               <div class="warning-title">AVISO IMPORTANTE</div>
               <div class="line"><p>Ao solicitar este orçamento, o cliente autoriza o uso de dados pessoais (nome, telefone, CPF) para esta finalidade.</p>
@@ -1755,9 +1772,6 @@ function escapeHTML(str) {
               ` : ''}
             </div>
             <div class="divider"></div>
-            <div class="line">Endereço: Rua Frei Cassiano, 88</div>
-            <div class="line">Santo Amaro, Recife - PE</div>
-            <div class="line">Data: ${new Date().toLocaleString('pt-BR')}</div>
           </body>
           </html>
         `;
@@ -1863,7 +1877,7 @@ function escapeHTML(str) {
                 <p>Este orçamento possui validade a partir da data de sua emissão, até o término do ano corrente (${currentYear}). Nesse período, os valores poderão ser atualizados, inclusive em decorrência de campanhas promocionais ou ajustes de tabela. Caso o agendamento do serviço ocorra fora do prazo de validade ou durante a vigência de novas condições comerciais, o cliente será previamente informado sobre eventuais alterações nos preços antes da confirmação do atendimento.</p>
               </div>
               <div class="print-footer">
-                <p>Endereço: <a href="https://www.google.com/maps/place/Rua+Frei+Cassimiro,+88,+Santo+Amaro,+Recife,+PE,+50100-260" target="_blank">Rua Frei Cassimiro, 88 - Santo Amaro, Recife - PE, 50100-260</a></p>
+                <p>Endereço: <a href="https://www.google.com/maps/place/${encodeURIComponent(address)}" target="_blank">${address}</a></p>
                 <p>Data: ${new Date().toLocaleString('pt-BR')}</p>
               </div>
               <button id="printButtonWindow" class="btn-primary no-print"><i class="fas fa-print mr-2"></i> Imprimir</button>
@@ -2028,10 +2042,10 @@ function escapeHTML(str) {
       if (!cpfPattern.test(cpfInput.value.replace(/\D/g, '')) && cpfInput.value !== '') {
         cpfInput.classList.add('error');
         cpfError.style.display = 'block';
-        } else {
-            cpfInput.classList.remove('error');
-            cpfError.style.display = 'none';
-        }
+      } else {
+        cpfInput.classList.remove('error');
+        cpfError.style.display = 'none';
+      }
     });
 
     document.getElementById('updateTableButton').addEventListener('click', () => {
